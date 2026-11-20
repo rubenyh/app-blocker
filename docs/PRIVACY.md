@@ -2,7 +2,7 @@
 
 ## Implemented
 
-The app declares an AccessibilityService protected by `android.permission.BIND_ACCESSIBILITY_SERVICE`. The user enables it in Android Accessibility settings. With YouTube viewer blocking enabled, it detects the Shorts viewer and requests Back, with bounded retries. Instagram blocking is not implemented yet. Device validation of this detection and navigation is pending T-305.
+The app declares an AccessibilityService protected by `android.permission.BIND_ACCESSIBILITY_SERVICE`. The user enables it in Android Accessibility settings. With YouTube viewer blocking enabled, it detects the Shorts viewer and requests Back, with bounded retries. Instagram blocking is not implemented yet. Device validation: see [COMPATIBILITY.md](COMPATIBILITY.md).
 
 The service configuration has no package filter, so Android delivers the service's events from every app ([ADR-0002](decisions/ADR-0002-unfiltered-events-for-context-exit.md)). This is needed to notice when the user leaves YouTube (`com.google.android.youtube`) or Instagram (`com.instagram.android`). The configuration requests window-state, window-content and scroll events, permits window-content retrieval, and requests view IDs.
 

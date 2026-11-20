@@ -2,7 +2,7 @@
 
 ## Current evidence and automated checks
 
-On **2026-11-19**, the baseline in [TASKS.md](../TASKS.md#t-102-baseline-build--done) passed assemble and two template JVM unit tests. No lint, instrumented or blocker device results have been recorded. These documents do not establish compatibility.
+Per-task check results live in [TASKS.md](../TASKS.md); verified device behavior lives in [COMPATIBILITY.md](COMPATIBILITY.md). Instrumented tests compile but have not been run.
 
 Run from `app/` in PowerShell:
 
@@ -12,7 +12,7 @@ Run from `app/` in PowerShell:
 .\gradlew.bat :app:connectedDebugAndroidTest
 ```
 
-`lintDebug` and `connectedDebugAndroidTest` are **NOT RUN** in the baseline; the latter needs a connected device. `MainScreenTest` likely fails: it expects `Hello X!`, but `Greeting` renders `Hello X !`. This is a source observation, not a verified failure. T-301 schedules deletion of the template tests.
+`connectedDebugAndroidTest` needs a connected device and is **NOT RUN** so far. Detector tests load redacted fixtures from `app/app/src/test/resources/fixtures/<app>/` (see the `accessibility-rule` skill).
 
 Planned JVM coverage focuses on positive and negative detector fixtures (viewer, entry points, normal videos, home feed, DMs, profiles and stories), stale/unknown snapshots, and policy loop prevention: one Back per entry, event bursts, cooldown, retry cap and package/window reset. Use an injected clock. Keep instrumented coverage to a minimal smoke test for launching the real UI and exercising onboarding/settings and service status once implemented; use manual device scenarios for target-app integration.
 
@@ -35,7 +35,7 @@ Device/adb work is serialized to the coordinator. This is a future blocker-valid
    adb shell am start -n com.appblocker.app/com.example.appblocker.MainActivity
    ```
 
-4. Once onboarding/service exist, accept the disclosure and enable the service in Android **Settings → Accessibility**. For Android 13+ sideloads, first use **App info → ⋮ → Allow restricted settings**. The current template cannot complete this step.
+4. Once onboarding/service exist, accept the disclosure and enable the service in Android **Settings → Accessibility**. For Android 13+ sideloads, first use **App info → ⋮ → Allow restricted settings**.
 
 For **emulator tests only**, after the planned service is implemented and declared, adb can enable it instead. **The `settings put ... enabled_accessibility_services` command replaces the entire list of enabled services, disabling any others; use a dedicated test emulator and restore its prior configuration afterward.** The application ID and fully qualified planned service class differ:
 

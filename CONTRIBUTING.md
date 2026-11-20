@@ -17,7 +17,7 @@ Run all Gradle commands from `app/` in PowerShell:
 .\gradlew.bat :app:connectedDebugAndroidTest
 ```
 
-The recorded 2026-11-19 baseline passed assemble and two template JVM tests. `lintDebug` is **not yet run**. `connectedDebugAndroidTest` is **not yet run** and needs a connected device or emulator; the coordinator owns device work. The current template UI test likely fails because it expects `Hello X!` while the UI renders `Hello X !`; this is a source observation, not a verified failure. T-301 schedules template test deletion. See [docs/TESTING.md](docs/TESTING.md) for manual coverage and evidence rules.
+Assemble, unit tests and lint pass on the integration branch (results per task in `TASKS.md`). `connectedDebugAndroidTest` is **not yet run** and needs a connected device or emulator; the coordinator owns device work. See [docs/TESTING.md](docs/TESTING.md) for manual coverage and evidence rules.
 
 ## Coding and review
 
@@ -26,7 +26,7 @@ The recorded 2026-11-19 baseline passed assemble and two template JVM tests. `li
 - Reuse existing patterns; avoid speculative abstractions and DI frameworks.
 - Keep detection and policy pure and testable on the JVM, with an injected clock for policy timing.
 - Do not upgrade dependencies without a concrete need.
-- Add meaningful positive and negative detector fixtures and policy tests for loop prevention, cooldown, retry caps and resets. Template test success is not feature coverage.
+- Add meaningful positive and negative detector fixtures and policy tests for loop prevention, cooldown, retry caps and resets.
 
 Review the full affected path, including callers, tests, resources and documentation. Verify normal-app behavior, unknown-screen handling, live toggles, overlay cleanup, accessibility and privacy boundaries. Include validation evidence and remaining risks; do not claim device compatibility from fixtures.
 

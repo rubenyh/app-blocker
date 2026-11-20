@@ -4,7 +4,7 @@ An Android Kotlin app intended to block YouTube Shorts and Instagram Reels while
 
 ## Current status
 
-**Compose template plus planning only. Nothing blocks yet.** The app displays a greeting screen; service, detection, overlays, onboarding and settings are TODO. Follow [TASKS.md](TASKS.md) for status and [PRODUCT.md](PRODUCT.md) for scope and acceptance criteria. LinkedIn, TikTok, whole-app blocking, patched apps and root are non-goals.
+**Early development.** Implemented: settings, onboarding with prominent disclosure, and YouTube Shorts viewer blocking (Back on entry), verified on one emulator configuration ([docs/COMPATIBILITY.md](docs/COMPATIBILITY.md)). Not yet implemented: entry-point masking, Instagram, diagnostics. Follow [TASKS.md](TASKS.md) for status and [PRODUCT.md](PRODUCT.md) for scope and acceptance criteria. LinkedIn, TikTok, whole-app blocking, patched apps and root are non-goals.
 
 Planned behaviors:
 
@@ -44,17 +44,17 @@ adb install -r app\build\outputs\apk\debug\app-debug.apk
 adb shell am start -n com.appblocker.app/com.example.appblocker.MainActivity
 ```
 
-The installed app currently opens the template UI. See [docs/TESTING.md](docs/TESTING.md) for checks and future device scenarios.
+The app opens onboarding until the accessibility service is enabled, then the settings screen. See [docs/TESTING.md](docs/TESTING.md) for checks and device scenarios.
 
 ## Permissions (planned)
 
-One accessibility service will read limited UI metadata from the two target apps, navigate Back from viewers and manage overlays. Onboarding will explain this and require affirmative consent before opening Accessibility settings. The service is not implemented or available to enable yet.
+One accessibility service reads limited UI metadata (view IDs, classes, flags, bounds; no text) from YouTube and presses Back when the Shorts viewer opens. From other apps it uses only the package name to notice when you leave (ADR-0002). Onboarding explains this and requires affirmative consent before opening Accessibility settings. See [docs/PRIVACY.md](docs/PRIVACY.md).
 
 For sideloaded apps on Android 13+, open **App info → ⋮ → Allow restricted settings** before enabling the accessibility service. Advanced Protection and sensitive views can prevent the planned approach; see [ADR-0001](docs/decisions/ADR-0001-accessibility-overlay-masking.md).
 
 ## Validation and troubleshooting
 
-The recorded baseline on **2026-11-19** passed `:app:assembleDebug :app:testDebugUnitTest`, including two template unit tests. Lint and instrumented/device tests have **not been run**; this is no evidence of working blocking. Details and a known likely template test failure are in [docs/TESTING.md](docs/TESTING.md).
+Current check status and device evidence are recorded per task in [TASKS.md](TASKS.md); verified device behavior is in [docs/COMPATIBILITY.md](docs/COMPATIBILITY.md). Instrumented tests have **not been run**.
 
 - **compileSdk warning:** AGP 9.0.1 reports testing only through compileSdk 36.1 while this project uses 37. The baseline build succeeded; no dependency change or warning suppression was needed for that result.
 - **First build:** the wrapper downloads Gradle 9.1.0 on first use; allow time and network access for the download and dependencies.

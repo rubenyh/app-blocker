@@ -147,7 +147,7 @@ This is the single implementation backlog.
   - Home-feed Shorts shelf: signed-out Home shows no feed.
   - A Shorts external link: no Short URL was available without inventing an ID. This is covered in T-305 device scenarios using a Share link.
 
-### T-304 YouTube rules + BlockPolicy — TODO (Dep: T-303)
+### T-304 YouTube rules + BlockPolicy — DONE (Dep: T-303)
 - **Acceptance:** unit tests cover these cases:
   - viewer gives exactly one Back;
   - entry point never gives Back;
@@ -156,9 +156,29 @@ This is the single implementation backlog.
   - cooldown;
   - retry cap;
   - reset on package switch.
+- **Orca:** task `task_324b18b51f9b`, dispatch `ctx_6a7c54facdc7` (codex), merged in `5caa39d`.
+- **Evidence (2026-11-19):**
+  - Build, unit tests (44, including `YouTubeRulesTest` 13 and `BlockPolicyTest` 10), androidTest compile and lint all exit 0.
+  - Rule `yt-reel-player-v1` matches `reel_player_page_container` inside `reel_recycler` at 50% or more of the root height.
+- **Known limit:** a retry needs a new YouTube event at least 1500 ms after the previous Back. A completely static, persistent viewer would get no retry. This was not observed on the device.
 
-### T-305 YouTube device validation (behavior A) — TODO (Dep: T-304)
+### T-305 YouTube device validation (behavior A) — DONE (Dep: T-304)
 - **Acceptance:** the docs/TESTING YouTube scenarios pass on the emulator, and `docs/COMPATIBILITY.md` has a measured row.
+- **Evidence (2026-11-19, YouTube 21.41.525, AVD Android 16, en-US):** see `docs/COMPATIBILITY.md`.
+  - One Back each time Shorts opened from the Shorts tab (about 316 ms) and from the search Shorts grid (about 370 ms).
+  - Normal video, home, channel and search pages produced no action.
+  - Toggling off and on applies live.
+  - The user pressing Back, rapid switching and a service reconnect all behave correctly.
+- **NOT RUN:**
+  - external link;
+  - home Shorts shelf (signed out);
+  - rotation;
+  - es locale;
+  - signed-in account;
+  - physical device;
+  - frame-exposure measurement.
+
+  These are tracked in T-501.
 
 ### T-306 YouTube entry-point masking (behavior B) — TODO (Dep: T-305)
 - **Acceptance:**
