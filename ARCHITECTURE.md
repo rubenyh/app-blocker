@@ -42,7 +42,7 @@ Accessibility event
   -> Back | Mask(rects) | ClearMask | Nothing
 ```
 
-Event bursts are conflated so only the latest snapshot is processed; extraction precedes rules. The service owns Android APIs and applies actions, while rules and policy stay independent of them for JVM testing. Context changes must reset policy and clear masks even when the new package is outside the filter. **Open design point:** a `packageNames` filter may hide the switch-away event. T-302a resolves this with evidence; see TASKS.md.
+Event bursts are conflated so only the latest snapshot is processed; extraction precedes rules. The service owns Android APIs and applies actions, while rules and policy stay independent of them for JVM testing. Context changes must reset policy and clear masks. The service config has no `packageNames` filter, so window-state events from other apps signal that the target context ended; only their package name and event type are read ([ADR-0002](docs/decisions/ADR-0002-unfiltered-events-for-context-exit.md)).
 
 ### Behavior and lifecycle
 
@@ -56,6 +56,6 @@ Event bursts are conflated so only the latest snapshot is processed; extraction 
 
 ### Data boundaries and constraints
 
-The planned service reads only the two target packages. Snapshots contain package, event type, view IDs, class names, state flags and bounds; text is not extracted by default. Nothing leaves the device. Diagnostics are off by default and contain only local rule decisions in memory, never messages, credentials, titles, screenshots or full accessibility dumps. Evidence must follow [docs/TESTING.md](docs/TESTING.md).
+The service reads only package name and event type from non-target apps (ADR-0002); detection metadata is read only from the two target packages. Snapshots contain package, event type, view IDs, class names, state flags and bounds; text is not extracted by default. Nothing leaves the device. Diagnostics are off by default and contain only local rule decisions in memory, never messages, credentials, titles, screenshots or full accessibility dumps. Evidence must follow [docs/TESTING.md](docs/TESTING.md).
 
 The ADR permits Back navigation and overlay masking on official apps. It does not permit true view removal or layout reflow: masked gaps remain and masks may lag. Patched apps and root require a new accepted ADR. Sensitive views (`accessibilityDataSensitive`) can hide needed metadata, and Advanced Protection can prevent this service from operating; Android 17 impact remains unverified in T-503. Android 13+ sideloads require the user's restricted-settings step. Prominent disclosure and consent are required by planned onboarding; Play approval is not assumed.

@@ -52,7 +52,7 @@ Requirement B stays a product requirement. It must not be silently dropped in fa
 
 ### Privacy
 
-- The service reads only the two target packages.
+- The service reads detection metadata only from the two target packages. From other apps it uses only the package name and event type, in memory, to notice when you leave a target app ([ADR-0002](docs/decisions/ADR-0002-unfiltered-events-for-context-exit.md)).
 - It extracts only the UI metadata needed for detection: view IDs, class names, state flags and bounds. It does not extract text by default.
 - Diagnostics are opt-in, local and limited to rule decisions. They contain no messages, credentials, titles, full accessibility dumps or screenshots.
 

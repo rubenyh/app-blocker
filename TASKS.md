@@ -100,12 +100,16 @@ This is the single implementation backlog.
   - The service enables on the emulator.
   - It receives YouTube events.
   - It logs only the package and event type.
-- **Open design point (resolve with evidence in T-302a):**
-  - With `packageNames` restricted to the two targets, the service may not receive an event when the user switches to another app. Overlay cleanup and policy reset depend on that event.
-  - Options to test:
-    - drop the `packageNames` filter, filter in code by event package and read nothing from other apps;
-    - `flagRetrieveInteractiveWindows` with `TYPE_WINDOWS_CHANGED`.
-  - Record the chosen option in ARCHITECTURE.md and PRIVACY.md.
+- **Open design point: RESOLVED by ADR-0002.** With the package filter in place, no switch-away event arrives. Without it, other apps' `TYPE_WINDOW_STATE_CHANGED` events arrive. The `packageNames` filter was removed, and non-target events contribute only their package name and type.
+- **T-302a:** DONE.
+  - **Orca:** task `task_f84661f350fd`, dispatch `ctx_72bb6b6781bc` (codex), merged in `15b6cae`.
+  - **Evidence (2026-11-19, AVD Android 16):**
+    - Build and unit tests pass on the integration branch: 10 tests, including `TargetAppsTest` 4.
+    - The service enabled via adb (emulator only) shows in `dumpsys accessibility` "Enabled services".
+    - Launching YouTube logs `com.google.android.youtube TYPE_WINDOW_STATE_CHANGED`.
+    - Live toggle: with both YouTube toggles off, 0 log lines while YouTube is used. Turning one toggle back on resumes logging without restarting the service.
+    - Enabling the service through the Settings UI is still NOT RUN. It is covered by T-302b's onboarding check.
+- **T-302b:** IN_PROGRESS. Orca dispatch `ctx_67e19ef13d00` (antigravity).
 
 ### T-303 YouTube evidence capture — TODO (Dep: T-302)
 - **Needs the owner** to install YouTube on AVD `Medium_Phone_API_36.1` and sign in with a test account, or use it signed out.
