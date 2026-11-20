@@ -194,12 +194,23 @@ This is the single implementation backlog.
   - Only the bottom-bar Shorts tab is masked. Search, feed and channel Shorts entries have no IDs and are not masked.
   - The tab is identified by position: fragile if YouTube reorders tabs. The 5-button (signed-in) layout is unverified.
   - Mask lag was not measured.
-### T-307 Opt-in diagnostics — TODO (Dep: T-304)
+### T-307 Opt-in diagnostics — DONE (Dep: T-304)
 - **Acceptance:**
   - Diagnostics are off by default.
   - They are an in-memory ring buffer that the user can view and clear.
   - PRIVACY is updated.
-
+- **Orca:** task `task_757e9d034165`, dispatch `ctx_7a7da4ec6a41` (codex), merged in `9773b03`.
+- **Evidence (2026-11-19):**
+  - **Checks:** build, 61 unit tests (including `DiagnosticsTest` 6), androidTest compile and lint all exit 0.
+  - **Device (AVD Android 16):**
+    - Off by default: no diagnostics section is shown.
+    - When enabled, an entry `HH:mm:ss youtube 21.41.525 None/yt-shorts-tab-v1 Nothing masks=1` is recorded. The version is read through `<queries>`.
+    - Consecutive duplicates are suppressed.
+    - "Clear" empties the log, and new decisions reappear afterwards.
+    - Turning the switch off and on leaves the log empty.
+    - After a force-stop and restart, the log is empty: it is in memory only.
+  - **NOT RUN:** the cap at 200 (unit-tested only), TalkBack, and large text.
+- **Backup review:** the diagnostics log is never written to disk, so it is never backed up. The DataStore toggles may be included in Android backup. This is accepted because they are non-sensitive booleans; see PRIVACY.md.
 ## P4 — Instagram
 
 ### T-401 Instagram evidence capture — BLOCKED (Dep: T-302)
