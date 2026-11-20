@@ -40,7 +40,7 @@ Accessibility event
   -> Back | Mask(rects) | ClearMask | Nothing
 ```
 
-Event bursts are conflated so only the latest snapshot is processed; extraction precedes rules. The service owns Android APIs and applies actions, while rules and policy stay independent of them for JVM testing. Context changes must reset policy and clear masks even when the new package is outside the filter.
+Event bursts are conflated so only the latest snapshot is processed; extraction precedes rules. The service owns Android APIs and applies actions, while rules and policy stay independent of them for JVM testing. Context changes must reset policy and clear masks even when the new package is outside the filter. **Open design point:** a `packageNames` filter may hide the switch-away event. T-302a resolves this with evidence; see TASKS.md.
 
 ### Behavior and lifecycle
 

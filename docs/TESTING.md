@@ -26,7 +26,7 @@ Device/adb work is serialized to the coordinator. This is a future blocker-valid
    emulator -avd Medium_Phone_API_36.1
    ```
 
-2. After boot, install YouTube and Instagram from the Play Store using the owner's own test accounts. Do not use another person's account or private content for evidence.
+2. After boot, install YouTube and Instagram from the Play Store. Use the owner's own test accounts, or YouTube signed out. Do not use another person's account or private content for evidence.
 3. Build, then install the debug APK from `app/`:
 
    ```powershell
@@ -61,8 +61,8 @@ These are expected results, **not passed checks**. Test A (viewer blocking) and 
 | Scenario | Expected result |
 |---|---|
 | Normal YouTube video | Playback and navigation remain usable; no Back or unrelated mask. |
-| Shorts via tab, home shelf, search, channel and external link (each separately) | A leaves each confirmed viewer once and returns to the prior context without a loop; B masks verified visible entry points and consumes touches. |
-| Instagram Reels via tab, feed, profile, DM and external link (each separately) | A leaves each confirmed viewer once; DM-origin Reels return to the thread. B masks verified entry points without navigating Back. |
+| Shorts via tab, home shelf, search, channel and external link, each separately. The YouTube app has no message path, so that path is N/A. | A leaves each confirmed viewer once and returns to the prior context without a loop; B masks verified visible entry points and consumes touches. |
+| Instagram Reels via tab, feed, search/explore, profile, DM and external link (each separately) | A leaves each confirmed viewer once; DM-origin Reels return to the thread. B masks verified entry points without navigating Back. |
 | DM threads and profiles, plus stories and normal feeds | Ordinary content remains usable; only verified short-form entry points may be masked with B enabled. |
 | Rapid switching between target and unrelated apps | Masks disappear when context ends; policy resets and unrelated apps are unaffected. |
 | User presses Back during detection | No extra navigation or repeated Back loop. |

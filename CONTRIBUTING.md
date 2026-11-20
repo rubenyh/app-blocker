@@ -4,7 +4,7 @@
 
 Pick an item in [TASKS.md](TASKS.md), read its acceptance criteria and affected code, and implement the smallest complete change. Validate it, update affected documentation in the same change, then have the coordinator mark it DONE with exact checks and results, unavailable checks listed as NOT RUN, and Orca identifiers where applicable. Keep changes consistent with [PRODUCT.md](PRODUCT.md) and [ADR-0001](docs/decisions/ADR-0001-accessibility-overlay-masking.md).
 
-Use the [documentation update mapping in AGENTS.md](AGENTS.md#documentation-update-mapping): update product, architecture, testing, compatibility, privacy or contributor instructions whenever the corresponding behavior, design, evidence, data handling or workflow changes.
+Use the [documentation update mapping in AGENTS.md](AGENTS.md#documentation-maintenance-contract): update product, architecture, testing, compatibility, privacy or contributor instructions whenever the corresponding behavior, design, evidence, data handling or workflow changes.
 
 ## Validation
 
@@ -39,6 +39,7 @@ Use Conventional Commits in the form `type(scope): summary`.
 - Commit regularly at each validated step. Never commit a failing build or tests. Branch-local `wip:` commits must be squashed before merge.
 - Never use `--no-verify`, and never amend published commits.
 - No push or PR, and no merge to `main`, without the owner's request.
+- Exception for the coordinator's `--no-ff` merges of worker branches: use `merge(<task-ids>): summary`, for example `merge(T-204): ...`. Put the Orca run, task and dispatch IDs in the body.
 
 ## Worktrees and orchestration
 

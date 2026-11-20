@@ -2,11 +2,7 @@
 
 ## Claude Code specifics
 
-### Skills (`.claude/skills/`)
-- `kotlin-feature`: when implementing one `TASKS.md` item.
-- `accessibility-rule`: when creating or changing a YouTube/Instagram detection rule.
-- `android-validation`: before reporting any task as done.
-- `docs-sync`: after a code or workflow change.
+Invoke the project skills listed in AGENTS.md "Workflow procedures" with the Skill tool. Run `android-validation` before reporting any task done.
 
 ### Subagents (`.claude/agents/`)
 Skills are preloaded into agents through their `skills:` frontmatter.
@@ -16,14 +12,4 @@ Skills are preloaded into agents through their `skills:` frontmatter.
 - `privacy-policy-reviewer`: changes touching permissions, data or overlays.
 - `documentation-maintainer`: doc updates after a change.
 
-Run independent read-only research and review agents in parallel. Keep edits to shared files sequential.
-
-### Documentation map
-- `PRODUCT.md`: scope, requirements, non-goals.
-- `ARCHITECTURE.md`: components and data flow.
-- `TASKS.md`: backlog and status.
-- `docs/decisions/`: ADRs.
-- `docs/TESTING.md`: test workflow and scenarios.
-- `docs/COMPATIBILITY.md`: verified app/device behavior.
-- `docs/PRIVACY.md`: permissions and data handling.
-- `README.md`, `CONTRIBUTING.md`: setup, commits, worktrees.
+Run independent read-only research and review subagents in parallel. The 2-worker cap applies to editing Orca workers. Keep edits to shared files sequential. For which document to update, use the contract table in AGENTS.md.

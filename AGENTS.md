@@ -4,7 +4,7 @@ Shared rules for all coding agents working in this repository.
 
 ## Project
 
-Android (Kotlin) app that blocks YouTube Shorts and Instagram Reels. An AccessibilityService presses Back on viewer entry and masks entry points with overlays (masking, not removal).
+Android (Kotlin) app that blocks YouTube Shorts and Instagram Reels. Planned design, not implemented yet (see `TASKS.md`): an AccessibilityService will press Back on viewer entry and mask entry points with overlays. This is masking, not removal.
 Docs: [PRODUCT.md](PRODUCT.md), [ARCHITECTURE.md](ARCHITECTURE.md), [TASKS.md](TASKS.md), [ADR-0001](docs/decisions/ADR-0001-accessibility-overlay-masking.md).
 Layout: Gradle root `app/`, module `app/app/`, sources `app/app/src/main/kotlin/com/example/appblocker/`, `applicationId` `com.appblocker.app`.
 
@@ -32,7 +32,7 @@ emulator -avd Medium_Phone_API_36.1
 - One app module. No speculative modules, DI frameworks or generic frameworks.
 - Enforcement lives in the service and never depends on an Activity.
 - The service handles only the two target packages.
-- Unknown screens produce no action.
+- Unknown screens trigger no Back and no new mask; existing masks are cleared.
 - Never invent selectors or view IDs. Rules need captured evidence (see the `accessibility-rule` skill).
 - No dependency upgrades without a concrete need.
 
@@ -80,7 +80,7 @@ Never downgrade a `PRODUCT.md` requirement to match incomplete code.
 - The main session is the coordinator. It owns product decisions, integration, merges, device/emulator work and `TASKS.md`.
 - Implementation runs as supervised Orca workers in child worktrees.
 - Shared files have a single owner per milestone: `AndroidManifest.xml`, `libs.versions.toml`, `app/app/build.gradle.kts`, `values/strings.xml`, `Navigation*.kt`, `TASKS.md`.
-- The emulator/adb is a single shared resource. Only the coordinator uses it.
+- The emulator/adb is a single shared resource. Only the coordinator uses it, unless a worker brief explicitly delegates device work.
 - Run at most 2 parallel workers.
 - Details: [CONTRIBUTING.md](CONTRIBUTING.md#worktrees-and-orchestration).
 
@@ -94,17 +94,12 @@ Never downgrade a `PRODUCT.md` requirement to match incomplete code.
 - No push, PR, or merge to `main` unless the owner asks.
 - Details: [CONTRIBUTING.md](CONTRIBUTING.md#commits).
 
-## Agents and skills
+## Workflow procedures
 
-Skills (`.claude/skills/`):
-- `kotlin-feature`: implement one `TASKS.md` item.
-- `accessibility-rule`: create or change a detection rule from captured evidence.
-- `android-validation`: run Gradle checks and device verification.
-- `docs-sync`: update docs after a change.
+Step-by-step procedures live in `.claude/skills/<name>/SKILL.md`. Any agent, including non-Claude workers, should read the one matching its task:
+- `kotlin-feature`: code changes.
+- `accessibility-rule`: detection rules and evidence capture.
+- `android-validation`: checks and reporting.
+- `docs-sync`: documentation updates.
 
-Subagents (`.claude/agents/`):
-- `android-platform-researcher`: read-only platform research.
-- `kotlin-implementer`: implement one assigned task.
-- `android-qa-reviewer`: read-only correctness and evidence review.
-- `privacy-policy-reviewer`: permission, data and Play policy review.
-- `documentation-maintainer`: keep root and `docs/` markdown in sync.
+The Claude-specific subagent index is in `CLAUDE.md`.

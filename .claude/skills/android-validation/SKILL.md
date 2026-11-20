@@ -19,13 +19,16 @@ From `app/`:
 - `lintDebug` exists through AGP but has not been run on this project yet. Do not assume it passes. Report the actual result.
 - A non-zero exit is FAIL. Quote the shortest decisive error line.
 
-## 2. Check for a device
+## 2. Check device ownership, then a device
+The coordinator owns adb and the emulator. If you are not the coordinator and your brief does not explicitly delegate device work to you, report Device as NOT RUN ("device owned by coordinator") and stop. Do not run any `adb` command.
+
+Otherwise:
 ```powershell
 adb devices
 ```
-No device listed: Device is NOT RUN. Stop here. Do not start the emulator unless the brief says you own it (the coordinator owns adb and the emulator).
+No device listed: Device is NOT RUN. Stop here.
 
-## 3. Device steps (only if a device is listed)
+## 3. Device steps (only if you own the device and one is listed)
 1. Install:
    ```powershell
    adb install -r app\build\outputs\apk\debug\app-debug.apk

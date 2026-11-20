@@ -39,7 +39,7 @@ Requirement B stays a product requirement. It must not be silently dropped in fa
 
 - Detection distinguishes an **active viewer** (block with Back) from a **visible entry point** (mask only, never Back).
 - Unknown or unrecognized screens are left alone. A missed block is better than blocking normal use or looping.
-- At most one Back per viewer entry, with a cooldown, and a retry cap after which the app stops and records a diagnostic.
+- At most one Back per viewer entry, with a cooldown, and a retry cap after which the app stops. It records a diagnostic when diagnostics are enabled.
 - Per-app and per-behavior toggles apply immediately, including while a target app is open.
 - Overlays are removed as soon as their context ends: the user leaves the app, the screen changes, protection turns off, the service stops, or the screen rotates.
 

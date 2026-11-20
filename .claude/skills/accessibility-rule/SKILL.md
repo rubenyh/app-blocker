@@ -37,21 +37,21 @@ Detection rules must come from evidence captured on a device. Never invent selec
 1. Viewer rules (Back on entry) must require active-player evidence, not only the presence of an entry point.
 2. Entry-point rules (overlay masks) must never produce Back.
 3. Match on the most stable signal that the evidence supports. Prefer resource-id plus class plus flags over bounds.
-4. Unknown screens produce no action.
+4. Unknown screens trigger no Back and no new mask; existing masks are cleared.
 5. Handle only `com.google.android.youtube` and `com.instagram.android`.
 
 ## 5. Negative fixtures (mandatory)
-Add a fixture that must produce no action for each:
+Add a fixture that must produce no Back for each screen that exists in the target app. Include at least the negatives listed in the task:
 - Home feed.
 - Normal (non-Short, non-Reel) video.
-- Direct messages.
-- Profile.
+- Direct messages (Instagram).
+- Profile or channel.
 - Search.
 
 A rule without these tests is incomplete.
 
-## 6. Record compatibility
-Add an entry to `docs/COMPATIBILITY.md`:
+## 6. Record capture metadata
+Put this in a header comment of the fixture file. Do not put it in `docs/COMPATIBILITY.md`, which holds only verified device behavior. A fixture is not device validation.
 - App versionName:
   ```powershell
   adb shell dumpsys package <pkg> | Select-String versionName
