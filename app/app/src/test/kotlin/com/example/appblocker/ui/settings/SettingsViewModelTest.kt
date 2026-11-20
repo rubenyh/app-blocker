@@ -4,6 +4,8 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.emptyPreferences
 import androidx.lifecycle.ViewModelStore
+import com.example.appblocker.diagnostics.DiagnosticEntry
+import com.example.appblocker.diagnostics.Diagnostics
 import com.example.appblocker.settings.BlockerSettings
 import com.example.appblocker.settings.SettingsRepository
 import java.io.IOException
@@ -52,19 +54,28 @@ class SettingsViewModelTest {
       runCurrent()
       val toggled = BlockerSettings(false, true, false, true, true)
       assertEquals(toggled, viewModel.settings.value)
+      val entry = DiagnosticEntry(1L, "com.google.android.youtube", null, null, "None", "Nothing", 0, false)
+      Diagnostics.record(entry)
+      assertEquals(listOf(entry), viewModel.diagnosticEntries.value)
+      viewModel.clearDiagnostics()
+      assertTrue(viewModel.diagnosticEntries.value.isEmpty())
+      Diagnostics.record(entry)
 
       failWrites = true
       viewModel.toggleDiagnostics()
       runCurrent()
       assertTrue(viewModel.saveFailed.value)
       assertEquals(toggled, viewModel.settings.value)
+      assertEquals(listOf(entry), viewModel.diagnosticEntries.value)
 
       failWrites = false
       viewModel.toggleDiagnostics()
       runCurrent()
       assertFalse(viewModel.saveFailed.value)
       assertEquals(toggled.copy(diagnosticsEnabled = false), viewModel.settings.value)
+      assertTrue(viewModel.diagnosticEntries.value.isEmpty())
     } finally {
+      Diagnostics.setEnabled(false)
       lifecycle.clear()
       Dispatchers.resetMain()
     }

@@ -1,6 +1,7 @@
 package com.example.appblocker.ui.settings
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,6 +18,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -33,10 +35,14 @@ import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.appblocker.R
+import com.example.appblocker.diagnostics.DiagnosticEntry
 import com.example.appblocker.settings.BlockerSettings
 import com.example.appblocker.settings.SettingsRepository
 import com.example.appblocker.settings.blockerSettingsDataStore
 import com.example.appblocker.ui.onboarding.isBlockerServiceEnabled
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @Composable
 fun SettingsScreen(
@@ -47,6 +53,7 @@ fun SettingsScreen(
   val viewModel = viewModel { SettingsViewModel(SettingsRepository(context.applicationContext.blockerSettingsDataStore)) }
   val settings by viewModel.settings.collectAsStateWithLifecycle()
   val saveFailed by viewModel.saveFailed.collectAsStateWithLifecycle()
+  val diagnosticEntries by viewModel.diagnosticEntries.collectAsStateWithLifecycle()
 
   var isServiceEnabled by remember { mutableStateOf(isBlockerServiceEnabled(context)) }
   LifecycleResumeEffect(Unit) {
@@ -65,6 +72,8 @@ fun SettingsScreen(
     onDiagnosticsToggle = viewModel::toggleDiagnostics,
     modifier = modifier,
     saveFailed = saveFailed,
+    diagnosticEntries = diagnosticEntries,
+    onClearDiagnostics = viewModel::clearDiagnostics,
   )
 }
 
@@ -81,6 +90,8 @@ internal fun SettingsScreen(
   isServiceEnabled: Boolean = false,
   onOpenOnboarding: () -> Unit = {},
   saveFailed: Boolean = false,
+  diagnosticEntries: List<DiagnosticEntry> = emptyList(),
+  onClearDiagnostics: () -> Unit = {},
 ) {
   Scaffold(
     modifier = modifier,
@@ -136,6 +147,39 @@ internal fun SettingsScreen(
           settings.diagnosticsEnabled,
           onDiagnosticsToggle,
         )
+        if (settings.diagnosticsEnabled) {
+          SectionTitle(stringResource(R.string.diagnostics_title))
+          Row(
+            Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween,
+          ) {
+            Text(
+              stringResource(R.string.diagnostics_count, diagnosticEntries.size),
+              Modifier.weight(1f),
+            )
+            TextButton(onClick = onClearDiagnostics) { Text(stringResource(R.string.diagnostics_clear)) }
+          }
+          val timeFormat = remember { SimpleDateFormat("HH:mm:ss", Locale.getDefault()) }
+          for (entry in diagnosticEntries.takeLast(50).asReversed()) {
+            Text(
+              stringResource(
+                R.string.diagnostics_entry,
+                timeFormat.format(Date(entry.timeMillis)),
+                entry.packageName.substringAfterLast('.'),
+                entry.appVersion ?: stringResource(R.string.diagnostics_unknown_version),
+                entry.detection + (entry.ruleId?.let { "/$it" } ?: ""),
+                entry.action,
+                entry.masks,
+                if (entry.capHit) " " + stringResource(R.string.diagnostics_cap) else "",
+              ),
+              Modifier.fillMaxWidth().horizontalScroll(rememberScrollState())
+                .padding(horizontal = 16.dp, vertical = 4.dp),
+              style = MaterialTheme.typography.bodySmall,
+              maxLines = 1,
+            )
+          }
+        }
       }
     }
   }

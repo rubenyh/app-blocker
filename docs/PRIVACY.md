@@ -12,7 +12,7 @@ When YouTube viewer blocking or entry-point masking is enabled, queued checks ob
 
 YouTube tab masking uses the second Button's position under the bottom bar, without reading its label. Service-owned accessibility overlays cover that rectangle and consume touches without changing YouTube's layout. Masks clear when the context ends, masking is disabled, a viewer or unknown screen appears, the configuration changes, or the service is interrupted or ends. The position-based rule is locale-independent but can break if YouTube reorders tabs; see [ARCHITECTURE.md](../ARCHITECTURE.md#youtube-tab-masking).
 
-Debuggable builds write only the detection type, rule ID, action and retry-cap state to local logcat under `BlockerAccessibility`; mask decisions add only rule ID and rectangle count. Release builds do not log these decisions. This debug logging is separate from the diagnostics setting; diagnostics are not implemented yet.
+Debuggable builds write only the detection type, rule ID, action and retry-cap state to local logcat under `BlockerAccessibility`; mask decisions add only rule ID and rectangle count. Release builds do not log these decisions. This debug logging is separate from the diagnostics setting; the opt-in in-memory diagnostics described below do not use logcat.
 
 Settings are stored locally in the existing `blocker_settings` Preferences DataStore, shared by the settings screen and service. The keys are:
 
@@ -22,10 +22,23 @@ Settings are stored locally in the existing `blocker_settings` Preferences DataS
 - `instagram_mask_entry_points`
 - `diagnostics_enabled`
 
-The app declares no network permission and uses no network communication. Android application backup is enabled in the manifest; there are no custom backup rules.
+## Opt-in local diagnostics
 
-## Planned (not implemented)
+Diagnostics default off. When enabled, the process-wide log retains at most 200 YouTube rule decisions in memory, dropping the oldest entries. Consecutive decisions with the same detection, action, mask count and rule ID are skipped. Settings displays the latest 50 entries and offers Clear; turning diagnostics off clears the entire log. Process death also loses the log. There is no export or share feature.
 
-- T-307: opt-in, local diagnostics limited to rule decisions.
+Each entry contains only:
 
-Android application backup is enabled, which may include the settings above in the user's device backup. Review this in T-307.
+- `timeMillis`: decision time in milliseconds, displayed as local time;
+- `packageName`: target package name;
+- `appVersion`: target app version name, or null if unavailable;
+- `ruleId`: matched viewer or mask rule ID, or null;
+- `detection`: `Viewer`, `None` or `Unknown`;
+- `action`: `Back` or `Nothing`;
+- `masks`: mask count only;
+- `capHit`: whether the retry cap has been reached.
+
+Entries contain no text, content descriptions, node lists, bounds, messages, credentials, titles, screenshots or accessibility dumps. They are never written to disk or sent over the network, and are not included in backup because they are never on disk. The persisted diagnostics opt-in setting is separate from these entries.
+
+The manifest's `<queries>` package visibility lists only `com.google.android.youtube` and `com.instagram.android`. It is used only to read those two target apps' version names through the package manager; lookup results, including unavailable versions, are cached for the service lifetime. Currently only YouTube decisions are recorded because Instagram detection is not implemented.
+
+The app declares no network permission and uses no network communication. Android application backup is enabled in the manifest with no custom backup rules, so the settings above may be included in the user's device backup; the diagnostic entries cannot be included.

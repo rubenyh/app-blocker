@@ -3,6 +3,7 @@ package com.example.appblocker.service
 import android.accessibilityservice.AccessibilityService
 import android.content.Intent
 import android.content.pm.ApplicationInfo
+import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.os.SystemClock
 import android.util.Log
@@ -11,6 +12,8 @@ import com.example.appblocker.detect.Detection
 import com.example.appblocker.detect.SnapshotExtractor
 import com.example.appblocker.detect.detectYouTube
 import com.example.appblocker.detect.youTubeEntryPoints
+import com.example.appblocker.diagnostics.DiagnosticEntry
+import com.example.appblocker.diagnostics.Diagnostics
 import com.example.appblocker.overlay.MaskOverlay
 import com.example.appblocker.policy.Action
 import com.example.appblocker.policy.BlockPolicy
@@ -29,6 +32,7 @@ class BlockerAccessibilityService : AccessibilityService() {
   private val policy = BlockPolicy()
   private var triggers = Channel<Unit>(Channel.CONFLATED)
   private val masks by lazy { MaskOverlay(this) }
+  private val appVersions = mutableMapOf<String, String?>()
 
   @Volatile private var settings = BlockerSettings()
 
@@ -46,6 +50,7 @@ class BlockerAccessibilityService : AccessibilityService() {
       repository.settings.collect {
         val previous = settings
         settings = it
+        Diagnostics.setEnabled(it.diagnosticsEnabled)
         if (!it.youtubeBlockViewer) policy.onContextExit()
         if (!it.youtubeMaskEntryPoints) masks.removeAll()
         if ((it.youtubeBlockViewer && !previous.youtubeBlockViewer) ||
@@ -81,6 +86,31 @@ class BlockerAccessibilityService : AccessibilityService() {
         if (action == Action.Back) {
           masks.removeAll()
           performGlobalAction(GLOBAL_ACTION_BACK)
+        }
+        if (pkg == YOUTUBE_PACKAGE && settings.diagnosticsEnabled) {
+          if (!appVersions.containsKey(pkg)) {
+            appVersions[pkg] = try {
+              packageManager.getPackageInfo(pkg, 0).versionName
+            } catch (_: PackageManager.NameNotFoundException) {
+              null
+            }
+          }
+          val entry = DiagnosticEntry(
+            timeMillis = System.currentTimeMillis(),
+            packageName = pkg,
+            appVersion = appVersions[pkg],
+            ruleId = (detection as? Detection.Viewer)?.ruleId
+              ?: if (rects.isNotEmpty()) "yt-shorts-tab-v1" else null,
+            detection = when (detection) {
+              is Detection.Viewer -> "Viewer"
+              Detection.None -> "None"
+              Detection.Unknown -> "Unknown"
+            },
+            action = if (action == Action.Back) "Back" else "Nothing",
+            masks = rects.size,
+            capHit = policy.retryLimitReached,
+          )
+          if (!entry.hasSameDecisionAs(Diagnostics.entries.value.lastOrNull())) Diagnostics.record(entry)
         }
         if (pkg == YOUTUBE_PACKAGE && applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE != 0) {
           if (settings.youtubeMaskEntryPoints) {
