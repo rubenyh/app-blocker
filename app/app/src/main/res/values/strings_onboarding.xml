@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="onboarding_title">AppBlocker Setup</string>
+    <string name="onboarding_what_it_does_title">What this app does</string>
+    <string name="onboarding_what_it_does_body">Blocks YouTube Shorts and Instagram Reels by leaving the viewer and covering their buttons. The rest of each app keeps working.</string>
+    <string name="onboarding_disclosure_title">Prominent disclosure</string>
+    <string name="onboarding_disclosure_intro">AppBlocker requires Android\'s Accessibility Service API to detect and block short-form video feeds.</string>
+    <string name="onboarding_disclosure_point_target_apps">The app uses Android\'s Accessibility Service API only in YouTube and Instagram.</string>
+    <string name="onboarding_disclosure_point_leave_detection">To know when you leave YouTube or Instagram, it also sees which app is on screen (app name only); nothing about other apps is stored or shared.</string>
+    <string name="onboarding_disclosure_point_structure">It reads limited screen structure (element IDs and positions), not messages or text.</string>
+    <string name="onboarding_disclosure_point_actions">It presses Back and draws covers.</string>
+    <string name="onboarding_disclosure_point_privacy">Nothing leaves the device. There is no network access.</string>
+    <string name="onboarding_disclosure_point_settings">Settings stay on the device.</string>
+    <string name="onboarding_consent_agree_button">Agree and open Accessibility settings</string>
+    <string name="onboarding_consent_not_now_button">Not now</string>
+    <string name="onboarding_restricted_settings_title">Android 13+ restricted settings</string>
+    <string name="onboarding_restricted_settings_text">If the switch is greyed out: open App info → ⋮ → Allow restricted settings, then return.</string>
+    <string name="onboarding_restricted_settings_button">Open App info</string>
+    <string name="onboarding_status_label">Protection service: %1$s</string>
+    <string name="status_on">On</string>
+    <string name="status_off">Off</string>
+    <string name="protection_service_status">Protection service: %1$s</string>
+    <string name="protection_service_tap_to_enable">Tap to open setup and enable protection service</string>
+</resources>

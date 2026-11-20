@@ -1,5 +1,6 @@
 package com.example.appblocker.ui.settings
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,27 +20,44 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.appblocker.R
 import com.example.appblocker.settings.BlockerSettings
 import com.example.appblocker.settings.SettingsRepository
 import com.example.appblocker.settings.blockerSettingsDataStore
+import com.example.appblocker.ui.onboarding.isBlockerServiceEnabled
 
 @Composable
-fun SettingsScreen(modifier: Modifier = Modifier) {
-  val context = LocalContext.current.applicationContext
-  val viewModel = viewModel { SettingsViewModel(SettingsRepository(context.blockerSettingsDataStore)) }
+fun SettingsScreen(
+  onOpenOnboarding: () -> Unit = {},
+  modifier: Modifier = Modifier,
+) {
+  val context = LocalContext.current
+  val viewModel = viewModel { SettingsViewModel(SettingsRepository(context.applicationContext.blockerSettingsDataStore)) }
   val settings by viewModel.settings.collectAsStateWithLifecycle()
   val saveFailed by viewModel.saveFailed.collectAsStateWithLifecycle()
+
+  var isServiceEnabled by remember { mutableStateOf(isBlockerServiceEnabled(context)) }
+  LifecycleResumeEffect(Unit) {
+    isServiceEnabled = isBlockerServiceEnabled(context)
+    onPauseOrDispose {}
+  }
+
   SettingsScreen(
     settings = settings,
+    isServiceEnabled = isServiceEnabled,
+    onOpenOnboarding = onOpenOnboarding,
     onYoutubeBlockViewerToggle = viewModel::toggleYoutubeBlockViewer,
     onYoutubeMaskEntryPointsToggle = viewModel::toggleYoutubeMaskEntryPoints,
     onInstagramBlockViewerToggle = viewModel::toggleInstagramBlockViewer,
@@ -60,6 +78,8 @@ internal fun SettingsScreen(
   onInstagramMaskEntryPointsToggle: () -> Unit,
   onDiagnosticsToggle: () -> Unit,
   modifier: Modifier = Modifier,
+  isServiceEnabled: Boolean = false,
+  onOpenOnboarding: () -> Unit = {},
   saveFailed: Boolean = false,
 ) {
   Scaffold(
@@ -79,6 +99,14 @@ internal fun SettingsScreen(
             color = MaterialTheme.colorScheme.error,
           )
         }
+        ServiceStatusRow(
+          isServiceEnabled = isServiceEnabled,
+          onClick = {
+            if (!isServiceEnabled) {
+              onOpenOnboarding()
+            }
+          },
+        )
         SectionTitle(stringResource(R.string.youtube))
         SettingSwitchRow(
           stringResource(R.string.block_shorts_viewer),
@@ -107,6 +135,43 @@ internal fun SettingsScreen(
           stringResource(R.string.local_diagnostics),
           settings.diagnosticsEnabled,
           onDiagnosticsToggle,
+        )
+      }
+    }
+  }
+}
+
+@Composable
+private fun ServiceStatusRow(
+  isServiceEnabled: Boolean,
+  onClick: () -> Unit,
+) {
+  val clickableModifier = if (!isServiceEnabled) {
+    Modifier.clickable(role = Role.Button, onClick = onClick)
+  } else {
+    Modifier
+  }
+
+  Row(
+    modifier = Modifier
+      .fillMaxWidth()
+      .then(clickableModifier)
+      .padding(horizontal = 16.dp, vertical = 12.dp),
+    verticalAlignment = Alignment.CenterVertically,
+    horizontalArrangement = Arrangement.SpaceBetween,
+  ) {
+    Column(Modifier.weight(1f)) {
+      val statusText = stringResource(if (isServiceEnabled) R.string.status_on else R.string.status_off)
+      Text(
+        text = stringResource(R.string.protection_service_status, statusText),
+        style = MaterialTheme.typography.bodyLarge,
+        color = if (isServiceEnabled) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.error,
+      )
+      if (!isServiceEnabled) {
+        Text(
+          text = stringResource(R.string.protection_service_tap_to_enable),
+          style = MaterialTheme.typography.bodyMedium,
+          color = MaterialTheme.colorScheme.primary,
         )
       }
     }
