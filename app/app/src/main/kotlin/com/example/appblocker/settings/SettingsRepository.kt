@@ -34,15 +34,18 @@ class SettingsRepository(private val dataStore: DataStore<Preferences>) {
     }
   }
 
-  private fun Preferences.toSettings(): BlockerSettings = BlockerSettings(
-    youtubeBlockViewer = this[youtubeBlockViewer] ?: true,
-    youtubeMaskEntryPoints = this[youtubeMaskEntryPoints] ?: false,
-    instagramBlockViewer = this[instagramBlockViewer] ?: true,
-    instagramMaskEntryPoints = this[instagramMaskEntryPoints] ?: false,
-    diagnosticsEnabled = this[diagnosticsEnabled] ?: false,
-  )
+  private fun Preferences.toSettings(): BlockerSettings = DEFAULTS.let { d ->
+    BlockerSettings(
+      youtubeBlockViewer = this[youtubeBlockViewer] ?: d.youtubeBlockViewer,
+      youtubeMaskEntryPoints = this[youtubeMaskEntryPoints] ?: d.youtubeMaskEntryPoints,
+      instagramBlockViewer = this[instagramBlockViewer] ?: d.instagramBlockViewer,
+      instagramMaskEntryPoints = this[instagramMaskEntryPoints] ?: d.instagramMaskEntryPoints,
+      diagnosticsEnabled = this[diagnosticsEnabled] ?: d.diagnosticsEnabled,
+    )
+  }
 
   private companion object {
+    val DEFAULTS = BlockerSettings()
     val youtubeBlockViewer = booleanPreferencesKey("youtube_block_viewer")
     val youtubeMaskEntryPoints = booleanPreferencesKey("youtube_mask_entry_points")
     val instagramBlockViewer = booleanPreferencesKey("instagram_block_viewer")
