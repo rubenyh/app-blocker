@@ -10,4 +10,10 @@
     <string name="settings_save_failed">Could not save settings. Please try again.</string>
     <string name="accessibility_service_label">AppBlocker protection</string>
     <string name="accessibility_service_description">Reads limited screen structure only in YouTube and Instagram to leave Shorts and Reels. Does not read messages or text. Nothing leaves your device. Blocking is not implemented yet.</string>
+    <string name="diagnostics_title">Diagnostics</string>
+    <string name="diagnostics_count">Entries: %1$d (showing latest 50)</string>
+    <string name="diagnostics_clear">Clear</string>
+    <string name="diagnostics_unknown_version">unknown version</string>
+    <string name="diagnostics_cap">cap</string>
+    <string name="diagnostics_entry">%1$s %2$s %3$s %4$s %5$s masks=%6$d%7$s</string>
 </resources>
