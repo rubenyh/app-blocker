@@ -195,7 +195,13 @@ This is the single implementation backlog.
 
 ## P4 — Instagram
 
-### T-401 Instagram evidence capture — TODO (Dep: T-302)
+### T-401 Instagram evidence capture — BLOCKED (Dep: T-302)
+- **Blocked on the owner:** the emulator has no Google account, and the coordinator does not create Meta accounts. Meta forbids automated sign-up, and verification needs the owner's contact details.
+- **Next action:** in AVD `Medium_Phone_API_36.1` (running), the owner:
+  1. signs in to Play Store with a Google account;
+  2. installs Instagram;
+  3. signs in to a throwaway Instagram test account;
+  4. tells the coordinator.
 - **Acceptance:** fixtures exist for:
   - the Reels tab;
   - a Reel opened from the feed, a profile, a DM and an external link;
