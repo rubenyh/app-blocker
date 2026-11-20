@@ -72,11 +72,24 @@ This is the single implementation backlog.
 
 ## P3 — Smallest verified YouTube implementation (Dep: P2)
 
-### T-301 Settings + DataStore — TODO
+**Orca (M2):** run `run_b54a6e861b0e`.
+
+### T-301 Settings + DataStore — DONE
 - **Work:**
   - Replace the template `ui/main` and `data/` with `settings/SettingsRepository` (DataStore Preferences) and a settings screen.
   - Delete the template tests.
 - **Acceptance:** the settings unit test passes, and the toggles persist across app restart.
+- **Orca:** task `task_cb2dd317ebb4`, dispatch `ctx_06b52d63f7a0` (codex), merged in `017164f`. Follow-up `refactor(settings)` commit by the coordinator.
+- **Evidence (2026-11-19, integration branch):**
+  - Ran `.\gradlew.bat :app:assembleDebug :app:testDebugUnitTest :app:assembleDebugAndroidTest :app:lintDebug`: exit 0.
+  - Unit tests: 6 pass (`SettingsRepositoryTest` 5, `SettingsViewModelTest` 1).
+  - Lint: 0 errors, 14 warnings, all pre-existing dependency or unused-resource warnings.
+  - DataStore version 1.3.0, the latest stable on Google Maven.
+  - Device (AVD `Medium_Phone_API_36.1`, Android 16):
+    - The settings screen shows the expected defaults: viewer blocking on, masking off, diagnostics off.
+    - Toggling YouTube masking, then `am force-stop`, then relaunch keeps the value.
+  - `SettingsScreenTest` (instrumented): compiles, but has NOT RUN.
+  - TalkBack: NOT RUN.
 
 ### T-302 Service skeleton + onboarding — TODO (Dep: T-301)
 - **Work:**
