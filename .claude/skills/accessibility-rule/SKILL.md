@@ -29,9 +29,12 @@ Detection rules must come from evidence captured on a device. Never invent selec
 4. Never commit, log or keep a raw dump. Keep no screenshots by default.
 
 ## 3. Encode fixtures
-1. Write each redacted capture as a Kotlin test builder. Add no JSON library.
+1. Store each redacted capture verbatim as a text fixture in `app/app/src/test/resources/fixtures/<app>/<screen>.txt`.
+   - Each node is one line: `<indent>class|resource-id|sel=<bool>|[l,t][r,b]`. Two spaces of indent per depth level.
+   - Put the `#` header lines described in step 6 at the top.
+   - Tests parse this format with a small helper. Add no JSON library.
 2. Name fixtures by screen, not by app version.
-3. Place them with the unit tests in `app/app/src/test/`.
+3. Check that every non-`#` line matches the format above, so no text slipped through.
 
 ## 4. Write the rule
 1. Viewer rules (Back on entry) must require active-player evidence, not only the presence of an entry point.

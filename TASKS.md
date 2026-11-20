@@ -125,9 +125,27 @@ This is the single implementation backlog.
     - Enabling through the real Settings toggle and the restricted-settings flow on a sideloaded install: NOT RUN, because the service was enabled via adb.
     - Instrumented `OnboardingScreenTest`: NOT RUN.
 
-### T-303 YouTube evidence capture — TODO (Dep: T-302)
-- **Needs the owner** to install YouTube on AVD `Medium_Phone_API_36.1` and sign in with a test account, or use it signed out.
+### T-303 YouTube evidence capture — DONE (Dep: T-302)
+- **Setup:** YouTube is preinstalled on the AVD and was used signed out.
 - **Acceptance:** redacted fixtures exist for the Shorts viewer, Shorts tab, Shorts shelf, a normal video, the home feed, search results and a channel page. Redacted means view IDs, classes, flags and bounds only.
+- **Evidence (2026-11-19, YouTube 21.41.525, AVD Android 16, en-US):**
+  - Fixtures are in `app/app/src/test/resources/fixtures/youtube/`:
+    - `shorts_viewer_tab` (positive)
+    - `shorts_viewer_from_search` (positive; the Home tab is still selected)
+    - `home` (negative)
+    - `search_results` (negative)
+    - `normal_video` (negative)
+    - `channel` (negative, with the long-form miniplayer)
+  - A format check confirmed that every node line contains only class, ID, selected flag and bounds.
+  - Raw dumps and temporary screenshots were deleted from the device and from the scratchpad.
+- **Observations:**
+  - Viewer signal: `id/reel_recycler` containing `id/reel_player_page_container`, filling the content area.
+  - `id/reel_time_bar` stays in the tree on every screen after Shorts has been opened once, so it is **not** a viewer signal.
+  - The Shorts viewer can appear with the Home tab selected, so the selected tab is not a viewer signal.
+  - The bottom-bar Shorts tab and the channel "Shorts" sub-tab have **no resource ID**. Identifying them needs a content-desc label (locale-dependent) or position. This affects masking (T-306), not T-304.
+- **Not captured (UNKNOWN):**
+  - Home-feed Shorts shelf: signed-out Home shows no feed.
+  - A Shorts external link: no Short URL was available without inventing an ID. This is covered in T-305 device scenarios using a Share link.
 
 ### T-304 YouTube rules + BlockPolicy — TODO (Dep: T-303)
 - **Acceptance:** unit tests cover these cases:

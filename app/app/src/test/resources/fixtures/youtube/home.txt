@@ -1,0 +1,32 @@
+# fixture: home
+# Home tab, signed out (no feed shelves shown). Negative.
+# source: uiautomator dump, redacted to class|resource-id|selected|bounds (no text, no content-desc)
+# app: com.google.android.youtube versionName=21.41.525
+# device: AVD Medium_Phone_API_36.1, Android 16, locale en-US, 1080x2400
+# captured: 2026-11-19 by coordinator (T-303)
+FrameLayout||sel=false|[0,0][1080,2400]
+  androidx.drawerlayout.widget.DrawerLayout|com.google.android.youtube:id/more_drawer_container|sel=false|[0,0][1080,2400]
+    FrameLayout|com.google.android.youtube:id/slim_status_bar_player_container|sel=false|[0,0][1080,2400]
+      FrameLayout|com.google.android.youtube:id/accessibility_layer_container|sel=false|[0,63][1080,2337]
+        ScrollView|com.google.android.youtube:id/watch_while_layout_coordinator_layout|sel=false|[0,63][1080,2337]
+          FrameLayout|com.google.android.youtube:id/toolbar_container|sel=false|[0,63][1080,189]
+            ViewGroup|com.google.android.youtube:id/toolbar|sel=false|[0,63][1080,189]
+              ImageView|com.google.android.youtube:id/youtube_logo|sel=false|[0,63][320,189]
+              ImageView|com.google.android.youtube:id/menu_item_view|sel=false|[828,63][954,189]
+              ImageView|com.google.android.youtube:id/menu_item_view|sel=false|[954,63][1080,189]
+          FrameLayout|com.google.android.youtube:id/loading_layout|sel=false|[0,189][1080,2337]
+            android.support.v7.widget.RecyclerView|com.google.android.youtube:id/results|sel=false|[0,189][1080,2337]
+              ViewGroup||sel=false|[60,501][165,606]
+              ViewGroup||sel=false|[186,501][894,606]
+              ViewGroup||sel=false|[915,501][1020,606]
+              ViewGroup||sel=false|[0,690][1080,1149]
+        HorizontalScrollView|com.google.android.youtube:id/pivot_bar|sel=false|[0,2211][1080,2337]
+          LinearLayout||sel=false|[0,2211][1080,2337]
+            Button||sel=true|[0,2211][270,2337]
+              TextView|com.google.android.youtube:id/text|sel=true|[97,2293][174,2323]
+            Button||sel=false|[270,2211][540,2337]
+              TextView|com.google.android.youtube:id/text|sel=false|[364,2293][446,2323]
+            Button||sel=false|[540,2211][810,2337]
+              TextView|com.google.android.youtube:id/text|sel=false|[593,2293][757,2323]
+            Button||sel=false|[810,2211][1080,2337]
+              TextView|com.google.android.youtube:id/text|sel=false|[920,2293][971,2323]
