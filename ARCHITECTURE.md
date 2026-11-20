@@ -10,7 +10,7 @@ The single module `app/app/` uses Compose under namespace `com.example.appblocke
 
 `service/BlockerAccessibilityService` is registered in the manifest with `BIND_ACCESSIBILITY_SERVICE`. It runs independently of any Activity, creates a supervised main-thread coroutine scope on connection, and collects the existing repository's settings into a volatile field. Reconnection cancels the previous scope and resets the policy and conflated trigger channel; unbind and destroy cancel the scope, close the channel and reset policy. Interrupt resets policy.
 
-`res/xml/accessibility_service_config.xml` has no package filter ([ADR-0002](docs/decisions/ADR-0002-unfiltered-events-for-context-exit.md)). It requests window-state, window-content and scroll events with a 100 ms notification timeout, window-content retrieval and view IDs. Non-YouTube window-state events synchronously clear masks and reset policy; no hierarchy is traversed for those events. YouTube events enqueue a trigger while viewer blocking or entry-point masking is enabled. Instagram detection and masking, and diagnostics, are not implemented. See [docs/PRIVACY.md](docs/PRIVACY.md).
+`res/xml/accessibility_service_config.xml` has no package filter ([ADR-0002](docs/decisions/ADR-0002-unfiltered-events-for-context-exit.md)). It requests window-state, window-content and scroll events with a 100 ms notification timeout, window-content retrieval and view IDs. Non-YouTube window-state events synchronously clear masks and reset policy; no hierarchy is traversed for those events. YouTube events enqueue a trigger while viewer blocking or entry-point masking is enabled. Instagram detection and masking are not implemented. See [docs/PRIVACY.md](docs/PRIVACY.md).
 
 ### YouTube detection and policy
 
@@ -30,6 +30,14 @@ With masking enabled, the collector passes those bounds to `overlay/MaskOverlay`
 
 Masks clear on context exit, masking toggle-off, interrupt, unbind, destroy, reconnect, configuration change and before Back. Configuration changes and enabling masking enqueue a fresh check. Window add/update/remove failures are caught so they do not crash the service. Debug-only mask logs contain only rule ID and rectangle count. Device positioning, touch blocking, colors and lifecycle behavior remain unverified until coordinator validation.
 
+### Local diagnostics
+
+`diagnostics/Diagnostics` is a process-wide pure Kotlin object shared by the service and settings ViewModel. Its read-only `StateFlow` exposes at most 200 decision entries, dropping the oldest when full. Recording defaults off; the service settings collector and the ViewModel's collected settings synchronize opt-in, and disabling clears the log. Clear removes entries without disabling recording. Nothing is persisted or sent over the network; process death loses the log.
+
+After each YouTube decision while diagnostics is enabled, the service records wall-clock time, package name, cached target version name (nullable), rule ID (nullable), detection (`Viewer`, `None`, `Unknown`), action (`Back`, `Nothing`), mask count and retry-cap state. Consecutive decisions with the same detection, action, mask count and rule ID are skipped. Version names use `getPackageInfo` once per package per service lifetime, caching null when the package is unavailable; manifest queries expose only the two target packages for this lookup.
+
+Settings shows the retained count, Clear, and the newest 50 entries in reverse time order while enabled. Each plain-text row shows local `HH:mm:ss`, short package name, version, detection/rule ID, action, mask count and an optional cap marker. Rows scroll horizontally to preserve one line and full text access. There is no export or share action. See [docs/PRIVACY.md](docs/PRIVACY.md) for data boundaries.
+
 ## Planned
 
 Everything below is planned, not implemented. [TASKS.md](TASKS.md) tracks delivery; [ADR-0001](docs/decisions/ADR-0001-accessibility-overlay-masking.md) is the accepted decision.
@@ -42,7 +50,6 @@ Keep one module. Packages below are under `com.example.appblocker`.
 |---|---|
 | `ui/onboarding` | Prominent disclosure, affirmative consent, opening Accessibility settings, restricted-settings help and service status. |
 | `detect/InstagramRules` | Evidence-backed Instagram viewer detection (T-402). |
-| `diagnostics/Diagnostics` | Opt-in, in-memory ring buffer of rule decisions. |
 
 ### Planned event-flow extensions
 
@@ -70,6 +77,6 @@ The implemented flow above handles YouTube viewer blocking and tab masking. Inst
 
 ### Data boundaries and constraints
 
-The service reads only event package name and type from non-target events (ADR-0002); node extraction currently handles only YouTube, checking the active root package first. Snapshots contain package, view IDs, class names, selected flags, bounds and parent indices, without text or content descriptions. Nothing leaves the device. Planned opt-in diagnostics will contain only local rule decisions in memory, never messages, credentials, titles, screenshots or full accessibility dumps. Evidence must follow [docs/TESTING.md](docs/TESTING.md).
+The service reads only event package name and type from non-target events (ADR-0002); node extraction currently handles only YouTube, checking the active root package first. Snapshots contain package, view IDs, class names, selected flags, bounds and parent indices, without text or content descriptions. Nothing leaves the device. Opt-in diagnostics contain only local rule decisions in memory, never messages, credentials, titles, screenshots or full accessibility dumps. Evidence must follow [docs/TESTING.md](docs/TESTING.md).
 
 The ADR permits Back navigation and overlay masking on official apps. It does not permit true view removal or layout reflow: masked gaps remain and masks may lag. Patched apps and root require a new accepted ADR. Sensitive views (`accessibilityDataSensitive`) can hide needed metadata, and Advanced Protection can prevent this service from operating; Android 17 impact remains unverified in T-503. Android 13+ sideloads require the user's restricted-settings step. Prominent disclosure and consent are required by planned onboarding; Play approval is not assumed.
