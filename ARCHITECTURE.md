@@ -2,9 +2,11 @@
 
 ## Implemented
 
-The single module `app/app/` is a Compose template under namespace `com.example.appblocker` (application ID `com.appblocker.app`). `MainActivity` enables edge-to-edge rendering and hosts `AppBlockerTheme` and `MainNavigation`. `Navigation.kt` uses Navigation3 with the serializable `Main` key from `NavigationKeys.kt`.
+The single module `app/app/` uses Compose under namespace `com.example.appblocker` (application ID `com.appblocker.app`). `MainActivity` enables edge-to-edge rendering and hosts `AppBlockerTheme` and `MainNavigation`. `Navigation.kt` uses Navigation3 with the serializable `Settings` start key from `NavigationKeys.kt`.
 
-`ui/main/MainScreen` shows loading, error or a greeting list and a placeholder OK button. `MainScreenViewModel` maps repository data into a `StateFlow` of UI state. `data/DataRepository` exposes `Flow<List<String>>`; `DefaultDataRepository` emits `Android`. `ui/theme` supplies Material3 colors and typography. There is no blocker service, detection, overlay, persistent settings or onboarding; the manifest declares only the launcher activity.
+`ui/settings/SettingsScreen` shows per-app viewer-blocking and entry-point-masking switches plus diagnostics opt-in. `SettingsViewModel` exposes a nullable settings `StateFlow` while loading and saves toggles through `settings/SettingsRepository`. The concrete repository exposes DataStore Preferences as `Flow<BlockerSettings>` and performs atomic updates. The top-level `Context.blockerSettingsDataStore` extension supplies the single process-wide `blocker_settings` store, shared with future service consumers. Viewer blocking defaults on; masking and diagnostics default off. Read IO failures emit defaults, and write IO failures leave the saved state unchanged and show a retry message.
+
+`ui/theme` supplies Material3 colors and typography. The template screen, repository and tests have been removed. There is no blocker service, detection, overlay or onboarding; the manifest declares only the launcher activity.
 
 ## Planned
 
@@ -12,13 +14,11 @@ Everything below is planned, not implemented. [TASKS.md](TASKS.md) tracks delive
 
 ### Components
 
-Keep one module. Packages below are under `com.example.appblocker`; T-301 replaces the placeholder `ui/main` and `data` packages.
+Keep one module. Packages below are under `com.example.appblocker`.
 
 | Component | Responsibility |
 |---|---|
 | `ui/onboarding` | Prominent disclosure, affirmative consent, opening Accessibility settings, restricted-settings help and service status. |
-| `ui/settings` | Per-app × per-behavior toggles and diagnostics opt-in. |
-| `settings/SettingsRepository` | DataStore Preferences exposed as `Flow<BlockerSettings>`. |
 | `service/BlockerAccessibilityService` | Lifecycle, event intake, package filtering, service coroutine scope and applying actions. |
 | `detect/ScreenSnapshot` | Package/event metadata and nodes with `viewId`, `className`, selected/visible flags and bounds; no text by default. |
 | `detect/SnapshotExtractor` | Bounded breadth-first extraction of a snapshot. |

@@ -1,3 +1,11 @@
 <resources>
     <string name="app_name">AppBlocker</string>
+    <string name="youtube">YouTube</string>
+    <string name="instagram">Instagram</string>
+    <string name="block_shorts_viewer">Block Shorts viewer</string>
+    <string name="block_reels_viewer">Block Reels viewer</string>
+    <string name="hide_entry_points">Hide entry points (masking)</string>
+    <string name="masking_description">Covers tabs and buttons; layout does not reflow.</string>
+    <string name="local_diagnostics">Local diagnostics (opt-in)</string>
+    <string name="settings_save_failed">Could not save settings. Please try again.</string>
 </resources>
