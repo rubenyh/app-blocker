@@ -6,11 +6,11 @@ The single module `app/app/` uses Compose under namespace `com.example.appblocke
 
 `ui/settings/SettingsScreen` shows per-app viewer-blocking and entry-point-masking switches plus diagnostics opt-in. `SettingsViewModel` exposes a nullable settings `StateFlow` while loading and saves toggles through `settings/SettingsRepository`. The concrete repository exposes DataStore Preferences as `Flow<BlockerSettings>` and performs atomic updates. The top-level `Context.blockerSettingsDataStore` extension supplies the single process-wide `blocker_settings` store, shared with the service. Viewer blocking defaults on; masking and diagnostics default off. Read IO failures emit defaults, and write IO failures leave the saved state unchanged and show a retry message.
 
-`ui/theme` supplies Material3 colors and typography. The template screen, repository and tests have been removed. Overlays are not implemented.
+`ui/theme` supplies Material3 colors and typography. The template screen, repository and tests have been removed.
 
 `service/BlockerAccessibilityService` is registered in the manifest with `BIND_ACCESSIBILITY_SERVICE`. It runs independently of any Activity, creates a supervised main-thread coroutine scope on connection, and collects the existing repository's settings into a volatile field. Reconnection cancels the previous scope and resets the policy and conflated trigger channel; unbind and destroy cancel the scope, close the channel and reset policy. Interrupt resets policy.
 
-`res/xml/accessibility_service_config.xml` has no package filter ([ADR-0002](docs/decisions/ADR-0002-unfiltered-events-for-context-exit.md)). It requests window-state, window-content and scroll events with a 100 ms notification timeout, window-content retrieval and view IDs. Non-YouTube window-state events reset policy; no hierarchy is traversed for those events. YouTube events enqueue a trigger only while viewer blocking is enabled. Instagram detection, masking and diagnostics are not implemented. See [docs/PRIVACY.md](docs/PRIVACY.md).
+`res/xml/accessibility_service_config.xml` has no package filter ([ADR-0002](docs/decisions/ADR-0002-unfiltered-events-for-context-exit.md)). It requests window-state, window-content and scroll events with a 100 ms notification timeout, window-content retrieval and view IDs. Non-YouTube window-state events synchronously clear masks and reset policy; no hierarchy is traversed for those events. YouTube events enqueue a trigger while viewer blocking or entry-point masking is enabled. Instagram detection and masking, and diagnostics, are not implemented. See [docs/PRIVACY.md](docs/PRIVACY.md).
 
 ### YouTube detection and policy
 
@@ -21,6 +21,14 @@ The single module `app/app/` uses Compose under namespace `com.example.appblocke
 `policy/BlockPolicy` accepts monotonic milliseconds per call and returns Back or Nothing. A viewer episode sends one Back immediately, permits retries at least 1500 ms apart, and caps attempts at three. Unknown preserves the episode without action. None, a package switch, context exit or disabling blocking ends it.
 
 One main-thread collector consumes `Channel<Unit>(Channel.CONFLATED)`: active root -> extractor -> YouTube rule -> policy with live settings and `SystemClock.elapsedRealtime()` -> `performGlobalAction(GLOBAL_ACTION_BACK)` when requested. A null snapshot is Unknown; a different root package resets policy without Back. Settings disable resets policy immediately, and re-enabling queues a fresh check. Debuggable builds log only detection, rule ID, action and retry-cap state. Fixture tests verify matching and policy, not device behavior; T-305 owns device validation.
+
+### YouTube tab masking
+
+`youTubeEntryPoints` is pure and separate from viewer detection and policy. Rule `yt-shorts-tab-v1` locates the single `pivot_bar` HorizontalScrollView, its direct LinearLayout, and the second of that layout's direct Button children, only when there are four or five buttons. It returns that button's screen bounds; missing or ambiguous structure and invalid bounds return no rectangles. T-303 fixtures from YouTube 21.41.525 support the four-button layout; five-button behavior has synthetic coverage only. This position-based rule is locale-independent but fragile if YouTube reorders tabs. It reads no labels.
+
+With masking enabled, the collector passes those bounds to `overlay/MaskOverlay` only for a known non-viewer YouTube screen. Empty, null, Unknown, Viewer or other-package snapshots clear masks. `MaskOverlay` owns plain touch-consuming views in service-context `TYPE_ACCESSIBILITY_OVERLAY` windows, updates existing layouts and removes extras. Views cannot take focus and are hidden from accessibility traversal. Masks cover the tab without layout reflow. System night mode selects initial white/dark color guesses, which require calibration against YouTube's own theme on the device.
+
+Masks clear on context exit, masking toggle-off, interrupt, unbind, destroy, reconnect, configuration change and before Back. Configuration changes and enabling masking enqueue a fresh check. Window add/update/remove failures are caught so they do not crash the service. Debug-only mask logs contain only rule ID and rectangle count. Device positioning, touch blocking, colors and lifecycle behavior remain unverified until coordinator validation.
 
 ## Planned
 
@@ -34,9 +42,6 @@ Keep one module. Packages below are under `com.example.appblocker`.
 |---|---|
 | `ui/onboarding` | Prominent disclosure, affirmative consent, opening Accessibility settings, restricted-settings help and service status. |
 | `detect/InstagramRules` | Evidence-backed Instagram viewer detection (T-402). |
-| `detect/YouTubeRules`, `detect/Detection` | Extend detection with `EntryPoints(rects)` for masking (T-306). |
-| `policy/BlockPolicy` | Extend actions with `Mask(rects)` and `ClearMask` for masking (T-306). |
-| `overlay/MaskOverlay` | `WindowManager` management of `TYPE_ACCESSIBILITY_OVERLAY`; add, update and `removeAll`. |
 | `diagnostics/Diagnostics` | Opt-in, in-memory ring buffer of rule decisions. |
 
 ### Planned event-flow extensions
@@ -48,10 +53,10 @@ Accessibility event
   -> SnapshotExtractor (bounded BFS)
   -> YouTubeRules / InstagramRules
   -> BlockPolicy + live settings + injected clock
-  -> Back | Mask(rects) | ClearMask | Nothing
+  -> Back | Nothing (viewer policy); show / removeAll (separate masking path)
 ```
 
-The implemented flow above currently handles only YouTube viewer blocking. Instagram rules and overlay actions extend it later; context changes must also clear masks when overlays exist.
+The implemented flow above handles YouTube viewer blocking and tab masking. Instagram rules extend it later.
 
 ### Behavior and lifecycle
 
