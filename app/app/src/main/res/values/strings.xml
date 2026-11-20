@@ -8,4 +8,6 @@
     <string name="masking_description">Covers tabs and buttons; layout does not reflow.</string>
     <string name="local_diagnostics">Local diagnostics (opt-in)</string>
     <string name="settings_save_failed">Could not save settings. Please try again.</string>
+    <string name="accessibility_service_label">AppBlocker protection</string>
+    <string name="accessibility_service_description">Reads limited screen structure only in YouTube and Instagram to leave Shorts and Reels. Does not read messages or text. Nothing leaves your device. Blocking is not implemented yet.</string>
 </resources>
