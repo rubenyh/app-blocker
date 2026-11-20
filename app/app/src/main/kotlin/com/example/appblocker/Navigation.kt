@@ -17,18 +17,13 @@ fun MainNavigation() {
   val initialEnabled = remember { isBlockerServiceEnabled(context) }
   val backStack = rememberNavBackStack(if (initialEnabled) Settings else Onboarding)
 
+  // Returning from system settings with the service enabled finishes onboarding.
+  // A disabled service never forces onboarding on resume, so "Not now" is respected;
+  // the Settings status row offers the way back.
   LifecycleResumeEffect(Unit) {
-    val enabled = isBlockerServiceEnabled(context)
-    if (enabled) {
-      if (backStack.lastOrNull() != Settings) {
-        backStack.clear()
-        backStack.add(Settings)
-      }
-    } else {
-      if (backStack.lastOrNull() != Onboarding) {
-        backStack.clear()
-        backStack.add(Onboarding)
-      }
+    if (backStack.lastOrNull() == Onboarding && isBlockerServiceEnabled(context)) {
+      backStack.clear()
+      backStack.add(Settings)
     }
     onPauseOrDispose {}
   }

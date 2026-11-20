@@ -91,7 +91,7 @@ This is the single implementation backlog.
   - `SettingsScreenTest` (instrumented): compiles, but has NOT RUN.
   - TalkBack: NOT RUN.
 
-### T-302 Service skeleton + onboarding — TODO (Dep: T-301)
+### T-302 Service skeleton + onboarding — DONE (Dep: T-301)
 - **Work:**
   - T-302a: the service, `accessibility_service_config.xml` scoped to both packages, and the manifest `<service>` with `BIND_ACCESSIBILITY_SERVICE`.
   - T-302b: onboarding with prominent disclosure, consent, restricted-settings help and service status.
@@ -109,7 +109,21 @@ This is the single implementation backlog.
     - Launching YouTube logs `com.google.android.youtube TYPE_WINDOW_STATE_CHANGED`.
     - Live toggle: with both YouTube toggles off, 0 log lines while YouTube is used. Turning one toggle back on resumes logging without restarting the service.
     - Enabling the service through the Settings UI is still NOT RUN. It is covered by T-302b's onboarding check.
-- **T-302b:** IN_PROGRESS. Orca dispatch `ctx_67e19ef13d00` (antigravity).
+- **T-302b:** DONE.
+  - **Orca:** task `task_80089885a8d7`, dispatch `ctx_67e19ef13d00` (antigravity), merged in `789b659`, followed by coordinator fixes.
+  - **Fixes:**
+    - Resume no longer forces onboarding, so "Not now" is respected.
+    - Uses the service class reference.
+    - Disclosure wording.
+    - `.kotlin` added to gitignore.
+  - **Evidence (2026-11-19, AVD Android 16):**
+    - Build, unit tests (`ServiceStatusTest` 11 plus the earlier tests), androidTest compile and lint: exit 0.
+    - With the service disabled, launch shows onboarding with the full disclosure, including the ADR-0002 sentence about other apps.
+    - "Agree and open Accessibility settings" opens `AccessibilitySettingsActivity`.
+    - After enabling the service and returning, the app shows Settings with "Protection service: On".
+    - "Not now", then Home, then relaunch stays on Settings with "Protection service: Off".
+    - Enabling through the real Settings toggle and the restricted-settings flow on a sideloaded install: NOT RUN, because the service was enabled via adb.
+    - Instrumented `OnboardingScreenTest`: NOT RUN.
 
 ### T-303 YouTube evidence capture — TODO (Dep: T-302)
 - **Needs the owner** to install YouTube on AVD `Medium_Phone_API_36.1` and sign in with a test account, or use it signed out.

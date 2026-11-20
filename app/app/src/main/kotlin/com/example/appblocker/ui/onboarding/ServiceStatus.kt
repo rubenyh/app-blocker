@@ -3,9 +3,9 @@ package com.example.appblocker.ui.onboarding
 import android.content.ComponentName
 import android.content.Context
 import android.provider.Settings
+import com.example.appblocker.service.BlockerAccessibilityService
 
-// The coordinator will switch this to a class reference after merging.
-const val BLOCKER_SERVICE_CLASS_NAME = "com.example.appblocker.service.BlockerAccessibilityService"
+val BLOCKER_SERVICE_CLASS_NAME: String = BlockerAccessibilityService::class.java.name
 
 /**
  * Parses a single component entry into (packageName, className) without requiring Android framework classes,

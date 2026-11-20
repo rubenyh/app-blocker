@@ -5,7 +5,7 @@
     <string name="onboarding_what_it_does_body">Blocks YouTube Shorts and Instagram Reels by leaving the viewer and covering their buttons. The rest of each app keeps working.</string>
     <string name="onboarding_disclosure_title">Prominent disclosure</string>
     <string name="onboarding_disclosure_intro">AppBlocker requires Android\'s Accessibility Service API to detect and block short-form video feeds.</string>
-    <string name="onboarding_disclosure_point_target_apps">The app uses Android\'s Accessibility Service API only in YouTube and Instagram.</string>
+    <string name="onboarding_disclosure_point_target_apps">The app acts only in YouTube and Instagram, using Android\'s Accessibility Service API.</string>
     <string name="onboarding_disclosure_point_leave_detection">To know when you leave YouTube or Instagram, it also sees which app is on screen (app name only); nothing about other apps is stored or shared.</string>
     <string name="onboarding_disclosure_point_structure">It reads limited screen structure (element IDs and positions), not messages or text.</string>
     <string name="onboarding_disclosure_point_actions">It presses Back and draws covers.</string>
