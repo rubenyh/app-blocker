@@ -180,13 +180,20 @@ This is the single implementation backlog.
 
   These are tracked in T-501.
 
-### T-306 YouTube entry-point masking (behavior B) — TODO (Dep: T-305)
+### T-306 YouTube entry-point masking (behavior B) — DONE (Dep: T-305)
 - **Acceptance:**
   - Masks follow scroll and rotation.
   - Masks clear on leave and on toggle-off.
   - Taps underneath are blocked.
   - The gap and lag are measured and recorded honestly.
-
+- **Orca:** task `task_ef54d1e25239`, dispatch `ctx_7a1d8e91d394` (codex), merged in `c87d07f`. The coordinator then calibrated the 3 px top inset and the colors.
+- **Evidence (2026-11-19):** see `docs/COMPATIBILITY.md`.
+  - Unit tests: 55, including `YouTubeEntryPointsTest`.
+  - On the device: position, touch blocking, light and dark blend, landscape, leave/return and live toggle all PASS.
+- **Scope limits:**
+  - Only the bottom-bar Shorts tab is masked. Search, feed and channel Shorts entries have no IDs and are not masked.
+  - The tab is identified by position: fragile if YouTube reorders tabs. The 5-button (signed-in) layout is unverified.
+  - Mask lag was not measured.
 ### T-307 Opt-in diagnostics — TODO (Dep: T-304)
 - **Acceptance:**
   - Diagnostics are off by default.

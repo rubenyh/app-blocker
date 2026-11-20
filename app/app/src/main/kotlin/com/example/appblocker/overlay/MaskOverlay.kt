@@ -18,7 +18,7 @@ class MaskOverlay(private val context: Context) {
       Configuration.UI_MODE_NIGHT_YES
     for ((index, rect) in rects.withIndex()) {
       val params = WindowManager.LayoutParams(
-        rect.right - rect.left, rect.bottom - rect.top,
+        rect.right - rect.left, (rect.bottom - rect.top - MASK_TOP_INSET_PX).coerceAtLeast(1),
         WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY,
         WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
           WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or
@@ -27,7 +27,7 @@ class MaskOverlay(private val context: Context) {
       ).apply {
         gravity = Gravity.TOP or Gravity.START
         x = rect.left
-        y = rect.top
+        y = rect.top + MASK_TOP_INSET_PX
       }
       val existing = views.getOrNull(index)
       val mask = existing ?: View(context).apply {
@@ -69,8 +69,11 @@ class MaskOverlay(private val context: Context) {
   }
 
   companion object {
-    // ponytail: initial guesses; calibrate these colors per YouTube theme on the device.
+    // Calibrated 2026-11-19 on YouTube 21.41.525 (AVD 1080x2400): colors blend with the bottom bar in
+    // light and dark themes; the top inset keeps the bar's divider line visible.
+    // ponytail: fixed pixels/colors; recalibrate when YouTube restyles the bar or on other densities.
     const val MASK_COLOR_LIGHT = 0xFFFFFFFF.toInt()
     const val MASK_COLOR_DARK = 0xFF0F0F0F.toInt()
+    const val MASK_TOP_INSET_PX = 3
   }
 }
