@@ -8,9 +8,11 @@ The service configuration has no package filter, so Android delivers the service
 
 For other apps, event handling reads only the event's package name and event type, in memory, to reset the blocking episode on window-state changes. It stores or logs nothing from those events and requests no action in those apps. Instagram currently receives the same treatment.
 
-When YouTube viewer blocking is enabled, queued checks obtain the active root and check its package name before traversing. Only a YouTube hierarchy is traversed: the extractor reads resource IDs, class names, selected and visible flags, screen bounds, and child counts/children to derive parent indices. Invisible nodes and their subtrees are skipped. Extraction is limited to 400 obtained nodes and depth 40. Snapshots stay in memory for the current decision; Android nodes are not cached. No node text, content descriptions or event text are read, and no messages, credentials, titles, screenshots or full accessibility dumps are captured.
+When YouTube viewer blocking or entry-point masking is enabled, queued checks obtain the active root and check its package name before traversing. Only a YouTube hierarchy is traversed: the extractor reads resource IDs, class names, selected and visible flags, screen bounds, and child counts/children to derive parent indices. Invisible nodes and their subtrees are skipped. Extraction is limited to 400 obtained nodes and depth 40. Snapshots stay in memory for the current decision; Android nodes are not cached. No node text, content descriptions or event text are read, and no messages, credentials, titles, screenshots or full accessibility dumps are captured.
 
-Debuggable builds write only the detection type, rule ID, action and retry-cap state to local logcat under `BlockerAccessibility`. Release builds do not log these decisions. This debug logging is separate from the diagnostics setting; diagnostics are not implemented yet.
+YouTube tab masking uses the second Button's position under the bottom bar, without reading its label. Service-owned accessibility overlays cover that rectangle and consume touches without changing YouTube's layout. Masks clear when the context ends, masking is disabled, a viewer or unknown screen appears, the configuration changes, or the service is interrupted or ends. The position-based rule is locale-independent but can break if YouTube reorders tabs; see [ARCHITECTURE.md](../ARCHITECTURE.md#youtube-tab-masking).
+
+Debuggable builds write only the detection type, rule ID, action and retry-cap state to local logcat under `BlockerAccessibility`; mask decisions add only rule ID and rectangle count. Release builds do not log these decisions. This debug logging is separate from the diagnostics setting; diagnostics are not implemented yet.
 
 Settings are stored locally in the existing `blocker_settings` Preferences DataStore, shared by the settings screen and service. The keys are:
 
@@ -25,6 +27,5 @@ The app declares no network permission and uses no network communication. Androi
 ## Planned (not implemented)
 
 - T-307: opt-in, local diagnostics limited to rule decisions.
-- T-306: accessibility overlays covering entry points and blocking touches, without changing the target app's layout.
 
 Android application backup is enabled, which may include the settings above in the user's device backup. Review this in T-307.
