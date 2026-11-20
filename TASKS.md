@@ -37,7 +37,7 @@ This is the single implementation backlog.
   - `CLAUDE.md` line 1 is `@AGENTS.md`, and `AGENTS.md` has no imports.
   - Commands match T-102, with lint marked not run.
   - A documentation-maintainer drift review was run; its findings were fixed in `docs: sync M1 docs`.
-  - Fresh-session load check: NOT RUN. Next action: the owner opens a new `claude` session in this worktree and confirms there is no duplicate-instruction warning.
+  - Fresh-session load check: PASS. A new `claude -p` session in this worktree loaded the global CLAUDE.md, the project CLAUDE.md, AGENTS.md (once, via import) and MEMORY.md. No instruction text was duplicated.
 
 ### T-202 Project skills — DONE
 - **Acceptance:**
