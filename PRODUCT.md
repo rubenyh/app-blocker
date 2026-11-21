@@ -33,6 +33,11 @@ What is technically possible on official apps:
 - The target app's layout **does not reflow**: the covered area stays as a gap.
 - True removal with reflow would need a patched app or root. That is out of scope unless a future ADR accepts it.
 
+Known limits, verified on device 2026-11-19/20:
+- Only the bottom-bar Shorts and Reels tabs are masked.
+- Shorts and Reels thumbnails in search, Explore and feeds stay visible.
+- Instagram video posts that play inline in the home feed are not blocked. Opening one into the Reels viewer is blocked.
+
 Requirement B stays a product requirement. It must not be silently dropped in favor of A alone.
 
 ### Behavior rules

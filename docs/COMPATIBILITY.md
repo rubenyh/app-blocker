@@ -40,6 +40,31 @@ Same device and configuration as above, with "Hide entry points (masking)" on. R
 
 The Shorts thumbnails in search results and on the Home feed are **not masked**. They have no resource IDs, and identifying them would require reading text. The Shorts sub-tab on channel pages is not masked either. Mask lag while the screen changes was not measured.
 
+## Instagram 456.1.0.56.78 (2026-11-20)
+
+Setup: the same AVD, Android 16, en-US, a signed-in throwaway test account, and a debug build. The service was enabled with adb (emulator only).
+- Rule `ig-clips-viewer-v1` (behavior A)
+- Rule `ig-reels-tab-v1` (behavior B)
+
+| Scenario | Result | Notes |
+|---|---|---|
+| Reels from the bottom Reels tab | PASS | One Back about 0.9 s after the tap |
+| Reel from a home-feed video post | PASS | One Back about 1.2 s after the tap |
+| Reel from an Explore tile | PASS | One Back about 1.5 s after the tap |
+| Reel from a profile Reels grid | PASS | One Back about 0.9 s after the tap |
+| Home feed, Explore grid, DM inbox, own profile | PASS (no action) | Inline feed videos keep playing in the feed. They are not the Reels viewer. |
+| Story / highlight viewer (`reel_viewer_root`) | PASS (no action) | Still open 7 s later. Stories are never blocked. |
+| Masking on: Reels tab, light theme | PASS | The tab is covered by ID and blends with the bar. The remaining tabs do not reflow. |
+| Masking on: tap the masked tab | PASS | No viewer opens and no Back is sent |
+| Masking on: dark theme | PASS (close match) | The `0xFF0F0F0F` mask is visually close to Instagram's dark bar. Exact color not measured. |
+| Leave Instagram, or masking off | PASS | The overlay is removed |
+
+**Not verified (Instagram):**
+- A Reel opened from a DM, and the return to the thread. Pending: the owner sends a Reel to the test account.
+- An external Reel link.
+- Rotation, the es locale, and physical devices.
+- The profile Reels sub-tab and the Explore grid. These are not masked by design (no unique ID, or an entry-point grid).
+
 **Not verified:**
 - External Shorts link: no link was available without inventing a video ID.
 - Home-feed Shorts shelf: signed-out Home shows no feed.

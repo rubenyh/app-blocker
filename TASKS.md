@@ -231,15 +231,30 @@ This is the single implementation backlog.
 - **Remaining:**
   - A DM thread containing a Reel, and a Reel opened from that DM. **Needs the owner** to send a Reel to the test account by DM.
   - A Reel opened from an external link.
-### T-402 Instagram rules — TODO (Dep: T-401, T-304)
+### T-402 Instagram rules — DONE (Dep: T-401, T-304)
 - **Acceptance:**
   - Unit tests pass.
   - A Reel opened from a DM goes Back to the DM.
   - A DM is never blocked.
+- **Orca:** run `run_f8e33a729e0b`, task `task_8d369736d3a7`, dispatch `ctx_13bad4d90b53` (codex), merged in `fce2cd1`.
+- **Evidence (2026-11-20):**
+  - Build, 95 unit tests (including `InstagramRulesTest`), androidTest compile and lint all exit 0.
+  - Rules `ig-clips-viewer-v1` (viewer) and `ig-reels-tab-v1` (`clips_tab` mask).
+  - `story_viewer` is asserted as None.
+- **Not yet verified:** "Reel from a DM returns to the DM" was not exercised on the device. It moves to T-403.
 
-### T-403 Instagram device validation + Reels-tab masking — TODO (Dep: T-402, T-306)
+### T-403 Instagram device validation + Reels-tab masking — IN_PROGRESS (Dep: T-402, T-306)
 - **Acceptance:** scenarios pass, and `docs/COMPATIBILITY.md` rows are added.
-
+- **Evidence (2026-11-20, Instagram 456.1.0.56.78, AVD Android 16):** see `docs/COMPATIBILITY.md`.
+  - Viewer blocked from the tab, feed, Explore and profile grid: one Back each, 0.9 to 1.5 s after the tap.
+  - Home, Explore, DM inbox, profile and stories: no action.
+  - Masking: covered, touch-blocked, light and dark themes, cleared when leaving the app or toggling masking off.
+- **Environment note:** the emulator ran out of storage. With the owner's approval, the owner's dev apps were uninstalled from the AVD: `com.astra.sociallock`, `com.example.todo`, `com.ruben_yh.mobileapp`, `com.hiram.todoexpo`.
+- **Remaining:**
+  - A Reel opened from a DM, and the return to the thread.
+  - The DM thread negative fixture.
+  - An external link.
+- **Next action:** the owner sends a Reel by DM to the test account. The coordinator then captures fixtures and runs the scenario.
 ## P5 — Compatibility and distribution hardening
 
 ### T-501 Configuration coverage — TODO (Dep: T-403)
