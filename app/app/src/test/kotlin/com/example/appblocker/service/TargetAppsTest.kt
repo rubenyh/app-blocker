@@ -15,6 +15,7 @@ class TargetAppsTest {
           youtubeBlockViewer = viewer,
           youtubeMaskEntryPoints = mask,
           instagramBlockViewer = false,
+          instagramMaskEntryPoints = false,
         )
         assertEquals(viewer || mask, isEnabledFor(YOUTUBE_PACKAGE, youtube))
         assertEquals(viewer, youtube.viewerEnabledFor(YOUTUBE_PACKAGE))
@@ -25,6 +26,7 @@ class TargetAppsTest {
 
         val instagram = BlockerSettings(
           youtubeBlockViewer = false,
+          youtubeMaskEntryPoints = false,
           instagramBlockViewer = viewer,
           instagramMaskEntryPoints = mask,
         )
@@ -57,7 +59,9 @@ class TargetAppsTest {
   fun diagnosticsDoesNotEnableDisabledApps() {
     val settings = BlockerSettings(
       youtubeBlockViewer = false,
+      youtubeMaskEntryPoints = false,
       instagramBlockViewer = false,
+      instagramMaskEntryPoints = false,
       diagnosticsEnabled = true,
     )
     assertFalse(isEnabledFor(YOUTUBE_PACKAGE, settings))

@@ -87,6 +87,8 @@ Details live in `docs/PRIVACY.md` once the service exists.
 | 2026-11-19 | Accessibility + overlay masking on official apps; true removal deferred (ADR-0001). |
 | 2026-11-19 | Sideload first; disclosure still built so Play is possible later. |
 | 2026-11-19 | Scope limited to YouTube and Instagram. |
+| 2026-11-20 | Entry-point masking defaults on for both apps after device verification; users can turn it off per app. |
+| 2026-11-20 | Instagram inline feed video/Reel posts are to be masked as entry points (T-404). |
 
 ## Open questions
 

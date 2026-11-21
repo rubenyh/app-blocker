@@ -52,7 +52,7 @@ class SettingsViewModelTest {
       viewModel.toggleInstagramMaskEntryPoints()
       viewModel.toggleDiagnostics()
       runCurrent()
-      val toggled = BlockerSettings(false, true, false, true, true)
+      val toggled = BlockerSettings(false, false, false, false, true)
       assertEquals(toggled, viewModel.settings.value)
       val entry = DiagnosticEntry(1L, "com.google.android.youtube", null, null, "None", "Nothing", 0, false)
       Diagnostics.record(entry)

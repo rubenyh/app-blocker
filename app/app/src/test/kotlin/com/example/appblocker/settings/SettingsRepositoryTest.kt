@@ -53,9 +53,9 @@ class SettingsRepositoryTest {
     val defaults = BlockerSettings()
     val cases = listOf(
       defaults.copy(youtubeBlockViewer = false),
-      defaults.copy(youtubeMaskEntryPoints = true),
+      defaults.copy(youtubeMaskEntryPoints = false),
       defaults.copy(instagramBlockViewer = false),
-      defaults.copy(instagramMaskEntryPoints = true),
+      defaults.copy(instagramMaskEntryPoints = false),
       defaults.copy(diagnosticsEnabled = true),
     )
     for ((index, expected) in cases.withIndex()) {
