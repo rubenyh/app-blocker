@@ -1,0 +1,19 @@
+# fixture: home_feed_menu
+# Home feed, UNCOMPRESSED dump (service uses flagIncludeNotImportantViews). Labels (video_states or slideout_iconview_icon => VIDEO; else row_feed_photo_imageview => PHOTO), outer video_container bounds:
+# source: uiautomator dump (uncompressed), redacted to class|resource-id|selected|bounds (no text, no content-desc)
+# app: com.instagram.android versionName=456.1.0.56.78
+# device: AVD Medium_Phone_API_36.1, Android 16, locale en-US, 1080x2400
+# captured: 2026-11-20 by coordinator (T-404), signed-in test account
+FrameLayout||sel=false|[309,190][770,510]
+  LinearLayout|com.instagram.android:id/context_menu|sel=false|[309,190][770,510]
+    androidx.recyclerview.widget.RecyclerView|com.instagram.android:id/context_menu_options_list|sel=false|[309,201][770,499]
+      Button|com.instagram.android:id/context_menu_item|sel=false|[309,201][770,350]
+        LinearLayout|com.instagram.android:id/context_menu_start_items|sel=false|[362,233][654,318]
+          ImageView|com.instagram.android:id/context_menu_item_start_icon|sel=false|[362,233][447,318]
+          LinearLayout||sel=false|[468,249][654,302]
+            TextView|com.instagram.android:id/context_menu_item_label|sel=false|[468,249][654,302]
+      Button|com.instagram.android:id/context_menu_item|sel=false|[309,350][770,499]
+        LinearLayout|com.instagram.android:id/context_menu_start_items|sel=false|[362,382][647,467]
+          ImageView|com.instagram.android:id/context_menu_item_start_icon|sel=false|[362,382][447,467]
+          LinearLayout||sel=false|[468,398][647,451]
+            TextView|com.instagram.android:id/context_menu_item_label|sel=false|[468,398][647,451]

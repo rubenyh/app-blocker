@@ -13,6 +13,7 @@ import com.example.appblocker.detect.SnapshotExtractor
 import com.example.appblocker.detect.detectYouTube
 import com.example.appblocker.detect.detectInstagram
 import com.example.appblocker.detect.instagramEntryPoints
+import com.example.appblocker.detect.instagramFeedVideoPosts
 import com.example.appblocker.detect.youTubeEntryPoints
 import com.example.appblocker.diagnostics.DiagnosticEntry
 import com.example.appblocker.diagnostics.Diagnostics
@@ -100,6 +101,11 @@ class BlockerAccessibilityService : AccessibilityService() {
         } else emptyList()
         if (rects.isEmpty()) masks.removeAll() else masks.show(
           rects, topInsetPx = if (pkg == YOUTUBE_PACKAGE) MaskOverlay.MASK_TOP_INSET_PX else 0,
+          // Feed masks must not swallow scroll gestures (device-verified 2026-11-20); a tap that
+          // opens the Reels viewer is caught by viewer blocking instead.
+          passThrough = if (pkg == INSTAGRAM_PACKAGE && snapshot != null) {
+            instagramFeedVideoPosts(snapshot).toSet()
+          } else emptySet(),
         )
         if (action == Action.Back) {
           masks.removeAll()

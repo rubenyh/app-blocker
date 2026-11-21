@@ -12,7 +12,11 @@ class MaskOverlay(private val context: Context) {
   private val windowManager = context.getSystemService(WindowManager::class.java)
   private val views = mutableListOf<View>()
 
-  fun show(rects: List<Bounds>, topInsetPx: Int) {
+  /**
+   * [passThrough] rects are visual-only (FLAG_NOT_TOUCHABLE) so the user can still scroll a feed
+   * under them; a tap reaches the app and any resulting viewer is handled by viewer blocking.
+   */
+  fun show(rects: List<Bounds>, topInsetPx: Int, passThrough: Set<Bounds> = emptySet()) {
     while (views.size > rects.size) removeLast()
     val dark = context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK ==
       Configuration.UI_MODE_NIGHT_YES
@@ -22,7 +26,8 @@ class MaskOverlay(private val context: Context) {
         WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY,
         WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
           WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or
-          WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
+          WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS or
+          (if (rect in passThrough) WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE else 0),
         PixelFormat.OPAQUE,
       ).apply {
         gravity = Gravity.TOP or Gravity.START
