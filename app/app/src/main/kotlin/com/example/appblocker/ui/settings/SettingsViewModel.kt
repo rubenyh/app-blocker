@@ -3,6 +3,7 @@ package com.example.appblocker.ui.settings
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.appblocker.diagnostics.Diagnostics
+import com.example.appblocker.settings.InstagramFeedMode
 import com.example.appblocker.settings.BlockerSettings
 import com.example.appblocker.settings.SettingsRepository
 import java.io.IOException
@@ -34,6 +35,8 @@ class SettingsViewModel(private val repository: SettingsRepository) : ViewModel(
   fun toggleInstagramMaskEntryPoints() = update {
     it.copy(instagramMaskEntryPoints = !it.instagramMaskEntryPoints)
   }
+  fun setInstagramFeedMode(mode: InstagramFeedMode) = update { it.copy(instagramFeedMode = mode) }
+
   fun toggleDiagnostics() = update { it.copy(diagnosticsEnabled = !it.diagnosticsEnabled) }
 
   private fun update(transform: (BlockerSettings) -> BlockerSettings) {

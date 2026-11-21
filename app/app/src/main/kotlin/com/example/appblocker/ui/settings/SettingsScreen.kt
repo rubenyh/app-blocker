@@ -10,6 +10,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.selectableGroup
+import androidx.compose.material3.RadioButton
+import com.example.appblocker.settings.InstagramFeedMode
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
@@ -70,6 +74,7 @@ fun SettingsScreen(
     onInstagramBlockViewerToggle = viewModel::toggleInstagramBlockViewer,
     onInstagramMaskEntryPointsToggle = viewModel::toggleInstagramMaskEntryPoints,
     onDiagnosticsToggle = viewModel::toggleDiagnostics,
+    onInstagramFeedModeChange = viewModel::setInstagramFeedMode,
     modifier = modifier,
     saveFailed = saveFailed,
     diagnosticEntries = diagnosticEntries,
@@ -92,6 +97,7 @@ internal fun SettingsScreen(
   saveFailed: Boolean = false,
   diagnosticEntries: List<DiagnosticEntry> = emptyList(),
   onClearDiagnostics: () -> Unit = {},
+  onInstagramFeedModeChange: (InstagramFeedMode) -> Unit = {},
 ) {
   Scaffold(
     modifier = modifier,
@@ -142,6 +148,29 @@ internal fun SettingsScreen(
           onInstagramMaskEntryPointsToggle,
           stringResource(R.string.masking_description),
         )
+        Column(Modifier.selectableGroup()) {
+          for ((mode, label) in listOf(
+            InstagramFeedMode.FOLLOWING_MASK_VIDEOS to R.string.instagram_feed_hide_videos,
+            InstagramFeedMode.FOLLOWING_SHOW_ALL to R.string.instagram_feed_show_all,
+            InstagramFeedMode.MASK_ALL_MEDIA to R.string.instagram_feed_hide_all,
+          )) {
+            Row(
+              Modifier.fillMaxWidth().selectable(
+                selected = settings.instagramFeedMode == mode,
+                enabled = settings.instagramMaskEntryPoints,
+                role = Role.RadioButton,
+                onClick = { onInstagramFeedModeChange(mode) },
+              ).padding(horizontal = 16.dp, vertical = 12.dp),
+              verticalAlignment = Alignment.CenterVertically,
+              horizontalArrangement = Arrangement.spacedBy(16.dp),
+            ) {
+              RadioButton(selected = settings.instagramFeedMode == mode, onClick = null,
+                enabled = settings.instagramMaskEntryPoints)
+              Text(stringResource(label), color = MaterialTheme.colorScheme.onSurface.copy(
+                alpha = if (settings.instagramMaskEntryPoints) 1f else 0.38f))
+            }
+          }
+        }
         SettingSwitchRow(
           stringResource(R.string.local_diagnostics),
           settings.diagnosticsEnabled,

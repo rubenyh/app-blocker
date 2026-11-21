@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
+import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.preferencesDataStore
@@ -31,6 +32,7 @@ class SettingsRepository(private val dataStore: DataStore<Preferences>) {
       preferences[instagramBlockViewer] = settings.instagramBlockViewer
       preferences[instagramMaskEntryPoints] = settings.instagramMaskEntryPoints
       preferences[diagnosticsEnabled] = settings.diagnosticsEnabled
+      preferences[instagramFeedMode] = settings.instagramFeedMode.name
     }
   }
 
@@ -41,10 +43,13 @@ class SettingsRepository(private val dataStore: DataStore<Preferences>) {
       instagramBlockViewer = this[instagramBlockViewer] ?: d.instagramBlockViewer,
       instagramMaskEntryPoints = this[instagramMaskEntryPoints] ?: d.instagramMaskEntryPoints,
       diagnosticsEnabled = this[diagnosticsEnabled] ?: d.diagnosticsEnabled,
+      instagramFeedMode = InstagramFeedMode.entries.firstOrNull { it.name == this[instagramFeedMode] }
+        ?: d.instagramFeedMode,
     )
   }
 
   private companion object {
+    val instagramFeedMode = stringPreferencesKey("instagram_feed_mode")
     val DEFAULTS = BlockerSettings()
     val youtubeBlockViewer = booleanPreferencesKey("youtube_block_viewer")
     val youtubeMaskEntryPoints = booleanPreferencesKey("youtube_mask_entry_points")
