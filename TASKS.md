@@ -255,6 +255,25 @@ This is the single implementation backlog.
   - The DM thread negative fixture.
   - An external link.
 - **Next action:** the owner sends a Reel by DM to the test account. The coordinator then captures fixtures and runs the scenario.
+### T-404 Instagram inline feed video/Reel masking — IN_PROGRESS (Dep: T-402)
+- **Decision:** owner, 2026-11-20. Mask video and Reel posts that play inline in the home feed.
+- **Acceptance:**
+  - Video posts are masked.
+  - Photo posts are never masked.
+  - Masks are clipped to the feed area: never over the top bar or the bottom tabs.
+  - Masks track scrolling.
+  - Masks are cleared on leave, toggle-off and viewer.
+  - Lag is measured and recorded honestly.
+- **Evidence (2026-11-20, Instagram 456.1.0.56.78):**
+  - Fixtures `feed_scroll_1..10` hold 10 video posts and 7 photo posts.
+  - Ground truth comes from paired uncompressed dumps:
+    - a video post's `video_container` contains `video_states`;
+    - a photo post's contains `row_feed_photo_imageview`.
+  - Rule candidate on the service-visible (compressed) tree: an outer `video_container` whose `media_group` has no `row_feed_photo_imageview` descendant means a video post. It matched 17 of 17 posts.
+- **Unknown:**
+  - Carousel posts (none were seen).
+  - Sponsored video formats.
+  - Whether the service's tree equals the compressed dump. This is confirmed on device in T-404.
 ## P5 — Compatibility and distribution hardening
 
 ### T-501 Configuration coverage — TODO (Dep: T-403)
