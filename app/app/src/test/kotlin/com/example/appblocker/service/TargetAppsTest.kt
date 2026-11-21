@@ -17,6 +17,10 @@ class TargetAppsTest {
           instagramBlockViewer = false,
         )
         assertEquals(viewer || mask, isEnabledFor(YOUTUBE_PACKAGE, youtube))
+        assertEquals(viewer, youtube.viewerEnabledFor(YOUTUBE_PACKAGE))
+        assertEquals(mask, youtube.maskEnabledFor(YOUTUBE_PACKAGE))
+        assertFalse(youtube.viewerEnabledFor(INSTAGRAM_PACKAGE))
+        assertFalse(youtube.maskEnabledFor(INSTAGRAM_PACKAGE))
         assertFalse(isEnabledFor(INSTAGRAM_PACKAGE, youtube))
 
         val instagram = BlockerSettings(
@@ -25,6 +29,10 @@ class TargetAppsTest {
           instagramMaskEntryPoints = mask,
         )
         assertEquals(viewer || mask, isEnabledFor(INSTAGRAM_PACKAGE, instagram))
+        assertEquals(viewer, instagram.viewerEnabledFor(INSTAGRAM_PACKAGE))
+        assertEquals(mask, instagram.maskEnabledFor(INSTAGRAM_PACKAGE))
+        assertFalse(instagram.viewerEnabledFor(YOUTUBE_PACKAGE))
+        assertFalse(instagram.maskEnabledFor(YOUTUBE_PACKAGE))
         assertFalse(isEnabledFor(YOUTUBE_PACKAGE, instagram))
       }
     }
@@ -34,6 +42,8 @@ class TargetAppsTest {
   fun nullUnknownAndSimilarPackagesAreRejected() {
     for (pkg in listOf(null, "", "com.android.settings", "$YOUTUBE_PACKAGE.extra", "COM.INSTAGRAM.ANDROID")) {
       assertFalse(isEnabledFor(pkg, BlockerSettings()))
+      assertFalse(BlockerSettings().viewerEnabledFor(pkg))
+      assertFalse(BlockerSettings().maskEnabledFor(pkg))
     }
   }
 

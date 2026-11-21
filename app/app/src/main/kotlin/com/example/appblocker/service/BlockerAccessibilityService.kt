@@ -11,6 +11,8 @@ import android.view.accessibility.AccessibilityEvent
 import com.example.appblocker.detect.Detection
 import com.example.appblocker.detect.SnapshotExtractor
 import com.example.appblocker.detect.detectYouTube
+import com.example.appblocker.detect.detectInstagram
+import com.example.appblocker.detect.instagramEntryPoints
 import com.example.appblocker.detect.youTubeEntryPoints
 import com.example.appblocker.diagnostics.DiagnosticEntry
 import com.example.appblocker.diagnostics.Diagnostics
@@ -33,6 +35,7 @@ class BlockerAccessibilityService : AccessibilityService() {
   private var triggers = Channel<Unit>(Channel.CONFLATED)
   private val masks by lazy { MaskOverlay(this) }
   private val appVersions = mutableMapOf<String, String?>()
+  private var activePackage: String? = null
 
   @Volatile private var settings = BlockerSettings()
 
@@ -43,23 +46,22 @@ class BlockerAccessibilityService : AccessibilityService() {
     triggers = Channel(Channel.CONFLATED)
     policy.onContextExit()
     masks.removeAll()
+    activePackage = null
     val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
     serviceScope = scope
     val repository = SettingsRepository(applicationContext.blockerSettingsDataStore)
     scope.launch {
       repository.settings.collect {
-        val previous = settings
         settings = it
         Diagnostics.setEnabled(it.diagnosticsEnabled)
-        if (!it.youtubeBlockViewer) policy.onContextExit()
-        if (!it.youtubeMaskEntryPoints) masks.removeAll()
-        if ((it.youtubeBlockViewer && !previous.youtubeBlockViewer) ||
-          (it.youtubeMaskEntryPoints && !previous.youtubeMaskEntryPoints)) triggers.trySend(Unit)
+        if (!it.viewerEnabledFor(activePackage)) policy.onContextExit()
+        if (!it.maskEnabledFor(activePackage)) masks.removeAll()
+        triggers.trySend(Unit)
       }
     }
     scope.launch {
       for (trigger in triggers) {
-        if (!settings.youtubeBlockViewer && !settings.youtubeMaskEntryPoints) {
+        if (!isEnabledFor(YOUTUBE_PACKAGE, settings) && !isEnabledFor(INSTAGRAM_PACKAGE, settings)) {
           policy.onContextExit()
           masks.removeAll()
           continue
@@ -69,25 +71,40 @@ class BlockerAccessibilityService : AccessibilityService() {
         } catch (_: RuntimeException) {
           null
         }
-        val pkg = snapshot?.packageName ?: YOUTUBE_PACKAGE
-        val detection = if (pkg == YOUTUBE_PACKAGE && snapshot != null) {
-          detectYouTube(snapshot)
-        } else {
-          Detection.Unknown
+        val pkg = snapshot?.packageName ?: activePackage ?: continue
+        if (pkg != activePackage) {
+          masks.removeAll()
+          policy.onContextExit()
         }
+        activePackage = pkg
+        if (!isEnabledFor(pkg, settings)) {
+          masks.removeAll()
+          policy.onContextExit()
+          continue
+        }
+        val detection = if (snapshot == null) Detection.Unknown else when (pkg) {
+          YOUTUBE_PACKAGE -> detectYouTube(snapshot)
+          INSTAGRAM_PACKAGE -> detectInstagram(snapshot)
+          else -> Detection.Unknown
+        }
+        val maskRuleId = if (pkg == INSTAGRAM_PACKAGE) "ig-reels-tab-v1" else "yt-shorts-tab-v1"
         val action = policy.onTargetScreen(
-          pkg, detection, settings.youtubeBlockViewer, SystemClock.elapsedRealtime(),
+          pkg, detection, settings.viewerEnabledFor(pkg), SystemClock.elapsedRealtime(),
         )
-        val rects = if (settings.youtubeMaskEntryPoints && snapshot != null &&
-          pkg == YOUTUBE_PACKAGE && detection == Detection.None) {
-          youTubeEntryPoints(snapshot)
+        val rects = if (settings.maskEnabledFor(pkg) && snapshot != null && detection == Detection.None) {
+          when (pkg) {
+            YOUTUBE_PACKAGE -> youTubeEntryPoints(snapshot)
+            INSTAGRAM_PACKAGE -> instagramEntryPoints(snapshot)
+            else -> emptyList()
+          }
         } else emptyList()
         if (rects.isEmpty()) masks.removeAll() else masks.show(rects)
         if (action == Action.Back) {
           masks.removeAll()
+          // A Reel opened from a DM should return to its thread; device check awaits the owner's DM fixture.
           performGlobalAction(GLOBAL_ACTION_BACK)
         }
-        if (pkg == YOUTUBE_PACKAGE && settings.diagnosticsEnabled) {
+        if (settings.diagnosticsEnabled) {
           if (!appVersions.containsKey(pkg)) {
             appVersions[pkg] = try {
               packageManager.getPackageInfo(pkg, 0).versionName
@@ -100,7 +117,7 @@ class BlockerAccessibilityService : AccessibilityService() {
             packageName = pkg,
             appVersion = appVersions[pkg],
             ruleId = (detection as? Detection.Viewer)?.ruleId
-              ?: if (rects.isNotEmpty()) "yt-shorts-tab-v1" else null,
+              ?: if (rects.isNotEmpty()) maskRuleId else null,
             detection = when (detection) {
               is Detection.Viewer -> "Viewer"
               Detection.None -> "None"
@@ -110,11 +127,12 @@ class BlockerAccessibilityService : AccessibilityService() {
             masks = rects.size,
             capHit = policy.retryLimitReached,
           )
-          if (!entry.hasSameDecisionAs(Diagnostics.entries.value.lastOrNull())) Diagnostics.record(entry)
+          val previous = Diagnostics.entries.value.lastOrNull()
+          if (previous?.packageName != pkg || !entry.hasSameDecisionAs(previous)) Diagnostics.record(entry)
         }
-        if (pkg == YOUTUBE_PACKAGE && applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE != 0) {
-          if (settings.youtubeMaskEntryPoints) {
-            Log.d("BlockerAccessibility", "ruleId=yt-shorts-tab-v1 rectCount=${rects.size}")
+        if (applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE != 0) {
+          if (settings.maskEnabledFor(pkg)) {
+            Log.d("BlockerAccessibility", "ruleId=$maskRuleId rectCount=${rects.size}")
           }
           val ruleId = (detection as? Detection.Viewer)?.ruleId
           Log.d("BlockerAccessibility", "detection=$detection ruleId=$ruleId action=$action capHit=${policy.retryLimitReached}")
@@ -125,14 +143,20 @@ class BlockerAccessibilityService : AccessibilityService() {
 
   override fun onAccessibilityEvent(event: AccessibilityEvent?) {
     val pkg = event?.packageName?.toString() ?: return
-    if (pkg != YOUTUBE_PACKAGE) {
+    if (pkg != YOUTUBE_PACKAGE && pkg != INSTAGRAM_PACKAGE) {
       if (event.eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
         masks.removeAll()
         policy.onContextExit()
+        activePackage = null
       }
       return
     }
-    if (settings.youtubeBlockViewer || settings.youtubeMaskEntryPoints) triggers.trySend(Unit)
+    if (pkg != activePackage) {
+      masks.removeAll()
+      policy.onContextExit()
+    }
+    activePackage = pkg
+    if (isEnabledFor(pkg, settings)) triggers.trySend(Unit)
   }
 
   override fun onConfigurationChanged(newConfig: Configuration) {
