@@ -5,7 +5,10 @@ import org.junit.Assert.assertEquals
 import org.junit.Test
 
 class InstagramEntryPointsTest {
-  @Test fun home() = assertTab("home")
+  @Test fun home() {
+    assertEquals(listOf(Bounds(216, 2211, 432, 2337), Bounds(0, 1481, 1080, 2211)),
+      instagramEntryPoints(loadInstagramFixture("home")))
+  }
   @Test fun explore() = assertTab("explore")
   @Test fun directInbox() = assertTab("direct_inbox")
   @Test fun ownProfile() = assertTab("own_profile")

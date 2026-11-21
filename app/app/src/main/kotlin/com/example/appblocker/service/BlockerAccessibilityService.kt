@@ -87,7 +87,7 @@ class BlockerAccessibilityService : AccessibilityService() {
           INSTAGRAM_PACKAGE -> detectInstagram(snapshot)
           else -> Detection.Unknown
         }
-        val maskRuleId = if (pkg == INSTAGRAM_PACKAGE) "ig-reels-tab-v1" else "yt-shorts-tab-v1"
+        val maskRuleId = if (pkg == INSTAGRAM_PACKAGE) "ig-reels-tab-v1+ig-feed-video-v1" else "yt-shorts-tab-v1"
         val action = policy.onTargetScreen(
           pkg, detection, settings.viewerEnabledFor(pkg), SystemClock.elapsedRealtime(),
         )
@@ -98,7 +98,9 @@ class BlockerAccessibilityService : AccessibilityService() {
             else -> emptyList()
           }
         } else emptyList()
-        if (rects.isEmpty()) masks.removeAll() else masks.show(rects)
+        if (rects.isEmpty()) masks.removeAll() else masks.show(
+          rects, topInsetPx = if (pkg == YOUTUBE_PACKAGE) MaskOverlay.MASK_TOP_INSET_PX else 0,
+        )
         if (action == Action.Back) {
           masks.removeAll()
           // A Reel opened from a DM should return to its thread; device check awaits the owner's DM fixture.
