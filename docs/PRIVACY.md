@@ -14,7 +14,7 @@ YouTube tab masking uses the second Button's position under the bottom bar, with
 
 Debuggable builds write only the detection type, rule ID, action and retry-cap state to local logcat under `BlockerAccessibility`; mask decisions add only rule ID and rectangle count. Release builds do not log these decisions. This debug logging is separate from the diagnostics setting; the opt-in in-memory diagnostics described below do not use logcat.
 
-Instagram bottom-tab masking uses only the `clips_tab` resource ID and bounds, without labels or locale-dependent text. The shared overlay covers the tab and consumes touches without changing Instagram's layout. The same mask cleanup paths apply. The profile Reels sub-tab, Explore grid and inline feed videos are outside this masking rule; Instagram overlay appearance and behavior still need device validation.
+Instagram masking uses the `clips_tab` resource ID and bounds for the bottom tab, plus resource IDs, parent indices and bounds for inline feed video posts. An outer `video_container` must contain `media_group` and no `row_feed_photo_imageview` descendant; photo posts are excluded. Feed rectangles are clipped to the feed area below the top action bar and above the bottom tabs. The shared overlay covers these rectangles and consumes touches without changing Instagram's layout. No video, photo, label or other content is read or retained. The same mask cleanup paths apply. The profile Reels sub-tab and Explore grid remain outside this masking rule; inline feed overlay behavior and scroll lag still need device validation.
 
 Settings are stored locally in the existing `blocker_settings` Preferences DataStore, shared by the settings screen and service. The keys are:
 

@@ -12,13 +12,13 @@ class MaskOverlay(private val context: Context) {
   private val windowManager = context.getSystemService(WindowManager::class.java)
   private val views = mutableListOf<View>()
 
-  fun show(rects: List<Bounds>) {
+  fun show(rects: List<Bounds>, topInsetPx: Int) {
     while (views.size > rects.size) removeLast()
     val dark = context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK ==
       Configuration.UI_MODE_NIGHT_YES
     for ((index, rect) in rects.withIndex()) {
       val params = WindowManager.LayoutParams(
-        rect.right - rect.left, (rect.bottom - rect.top - MASK_TOP_INSET_PX).coerceAtLeast(1),
+        rect.right - rect.left, (rect.bottom - rect.top - topInsetPx).coerceAtLeast(1),
         WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY,
         WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
           WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or
@@ -27,7 +27,7 @@ class MaskOverlay(private val context: Context) {
       ).apply {
         gravity = Gravity.TOP or Gravity.START
         x = rect.left
-        y = rect.top + MASK_TOP_INSET_PX
+        y = rect.top + topInsetPx
       }
       val existing = views.getOrNull(index)
       val mask = existing ?: View(context).apply {
