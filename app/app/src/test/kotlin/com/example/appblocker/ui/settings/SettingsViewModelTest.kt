@@ -6,6 +6,7 @@ import androidx.datastore.preferences.core.emptyPreferences
 import androidx.lifecycle.ViewModelStore
 import com.example.appblocker.diagnostics.DiagnosticEntry
 import com.example.appblocker.diagnostics.Diagnostics
+import com.example.appblocker.settings.InstagramFeedMode
 import com.example.appblocker.settings.BlockerSettings
 import com.example.appblocker.settings.SettingsRepository
 import java.io.IOException
@@ -46,13 +47,14 @@ class SettingsViewModelTest {
       runCurrent()
       assertEquals(BlockerSettings(), viewModel.settings.value)
 
+      viewModel.setInstagramFeedMode(InstagramFeedMode.FOLLOWING_SHOW_ALL)
       viewModel.toggleYoutubeBlockViewer()
       viewModel.toggleYoutubeMaskEntryPoints()
       viewModel.toggleInstagramBlockViewer()
       viewModel.toggleInstagramMaskEntryPoints()
       viewModel.toggleDiagnostics()
       runCurrent()
-      val toggled = BlockerSettings(false, false, false, false, true)
+      val toggled = BlockerSettings(false, false, false, false, true, InstagramFeedMode.FOLLOWING_SHOW_ALL)
       assertEquals(toggled, viewModel.settings.value)
       val entry = DiagnosticEntry(1L, "com.google.android.youtube", null, null, "None", "Nothing", 0, false)
       Diagnostics.record(entry)

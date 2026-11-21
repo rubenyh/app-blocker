@@ -18,8 +18,7 @@ class InstagramFeedVideoPostsTest {
   @Test fun scroll10() = assertCapturedVideos(10)
 
   @Test fun homeVideo() {
-    assertEquals(listOf(Bounds(0, 1481, 1080, 2211)),
-      instagramFeedVideoPosts(loadInstagramFixture("home")))
+    assertEquals(emptyList<Bounds>(), instagramFeedVideoPosts(loadInstagramFixture("home")))
   }
 
   @Test fun otherScreensHaveNoFeedMasks() {
@@ -51,15 +50,15 @@ class InstagramFeedVideoPostsTest {
       instagramFeedVideoPosts(feed(Bounds(0, 0, 1080, 87))))
   }
 
-  @Test fun photoDescendantNeverMasked() {
+  @Test fun posterDoesNotSuppressPlaybackSignal() {
     val s = feed(Bounds(0, 63, 1080, 500))
-    assertEquals(emptyList<Bounds>(), instagramFeedVideoPosts(s.copy(nodes = s.nodes + listOf(
+    assertEquals(listOf(Bounds(0, 63, 1080, 500)), instagramFeedVideoPosts(s.copy(nodes = s.nodes + listOf(
       node(null, Bounds(0, 63, 1080, 500), 4),
       node("row_feed_photo_imageview", Bounds(0, 63, 1080, 500), 5),
     ))))
   }
 
-  @Test fun missingMediaIsNotVideo() {
+  @Test fun missingPlaybackSignalIsNotVideo() {
     val s = feed(Bounds(0, 63, 1080, 500))
     assertEquals(emptyList<Bounds>(), instagramFeedVideoPosts(s.copy(nodes = s.nodes.dropLast(1))))
   }
@@ -73,15 +72,15 @@ class InstagramFeedVideoPostsTest {
     assertEquals(listOf(Bounds(0, 63, 1080, 500)), instagramFeedVideoPosts(s.copy(nodes = nodes)))
   }
 
-  @Test fun pagerFallbackWhenListIsAbsent() {
+  @Test fun missingListHasNoMasks() {
     val s = feed(Bounds(0, 0, 1080, 2400))
     val nodes = s.nodes.toMutableList().apply { this[2] = this[2].copy(viewId = null) }
-    assertEquals(listOf(Bounds(0, 63, 1080, 2211)), instagramFeedVideoPosts(s.copy(nodes = nodes)))
+    assertEquals(emptyList<Bounds>(), instagramFeedVideoPosts(s.copy(nodes = nodes)))
   }
 
   @Test fun noFeedAreaOrWrongPackageHasNoMasks() {
     val s = feed(Bounds(0, 63, 1080, 500))
-    val nodes = s.nodes.toMutableList().apply { this[1] = this[1].copy(viewId = null) }
+    val nodes = s.nodes.toMutableList().apply { this[2] = this[2].copy(viewId = null) }
     assertEquals(emptyList<Bounds>(), instagramFeedVideoPosts(s.copy(nodes = nodes)))
     assertEquals(emptyList<Bounds>(), instagramFeedVideoPosts(s.copy(packageName = "other.app")))
     assertEquals(emptyList<Bounds>(), instagramFeedVideoPosts(s.copy(nodes = emptyList())))
@@ -95,21 +94,10 @@ class InstagramFeedVideoPostsTest {
 
   private fun assertCapturedVideos(number: Int) {
     val name = "feed_scroll_$number"
-    val header = requireNotNull(javaClass.getResource("/fixtures/instagram/$name.txt")).readText()
-    fun labeledBounds(label: String) = Regex("#   $label \\[(-?\\d+),(-?\\d+)\\]\\[(-?\\d+),(-?\\d+)\\]")
-      .findAll(header).map { match ->
-        val v = match.groupValues.drop(1).map { it.toInt() }
-        Bounds(v[0], v[1], v[2], v[3])
-      }.toList()
-    val videos = labeledBounds("VIDEO")
-    assertTrue("$name needs video ground truth", videos.isNotEmpty())
     val s = loadInstagramFixture(name)
-    val actual = instagramFeedVideoPosts(s)
-    assertEquals(name, videos, actual)
-    assertTrue(name, labeledBounds("PHOTO").none { it in actual })
+    assertEquals(name, labelledPosts(name, "VIDEO").mapNotNull { clipPost(s, it) },
+      instagramFeedVideoPosts(s))
     assertEquals(Detection.None, detectInstagram(s))
-    assertEquals(s.nodes.filter { it.viewId == "$INSTAGRAM_PACKAGE:id/clips_tab" }.map { it.bounds } + videos,
-      instagramEntryPoints(s))
   }
 
   private fun feed(post: Bounds) = ScreenSnapshot(INSTAGRAM_PACKAGE, listOf(
@@ -117,7 +105,7 @@ class InstagramFeedVideoPostsTest {
     node("swipeable_tab_view_pager", Bounds(0, 63, 1080, 2211), 0),
     SnapshotNode("android:id/list", "RecyclerView", false, Bounds(0, 63, 1080, 2211), 1),
     node("video_container", post, 2),
-    node("media_group", post, 3),
+    node("video_states", post, 3),
   ))
 
   private fun node(id: String?, bounds: Bounds, parent: Int) = SnapshotNode(

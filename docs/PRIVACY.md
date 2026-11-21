@@ -4,7 +4,7 @@
 
 The app declares an AccessibilityService protected by `android.permission.BIND_ACCESSIBILITY_SERVICE`. The user enables it in Android Accessibility settings. With the respective app's viewer blocking enabled, it detects the YouTube Shorts or Instagram Reels viewer and requests Back, with bounded retries. Instagram Stories are not a viewer signal. Device validation: see [COMPATIBILITY.md](COMPATIBILITY.md); Instagram remains unverified on device.
 
-The service configuration has no package filter, so Android delivers the service's events from every app ([ADR-0002](decisions/ADR-0002-unfiltered-events-for-context-exit.md)). This is needed to notice when the user leaves YouTube (`com.google.android.youtube`) or Instagram (`com.instagram.android`). The configuration requests window-state, window-content and scroll events, permits window-content retrieval, and requests view IDs.
+The service configuration has no package filter, so Android delivers the service's events from every app ([ADR-0002](decisions/ADR-0002-unfiltered-events-for-context-exit.md)). This is needed to notice when the user leaves YouTube (`com.google.android.youtube`) or Instagram (`com.instagram.android`). The configuration requests window-state, window-content and scroll events, permits window-content retrieval, and requests view IDs including non-important views. The extraction caps remain 400 nodes and depth 40.
 
 For other apps, event handling reads only the event's package name and event type, in memory, to reset the blocking episode on window-state changes. It stores or logs nothing from those events and requests no action in those apps.
 
@@ -14,7 +14,9 @@ YouTube tab masking uses the second Button's position under the bottom bar, with
 
 Debuggable builds write only the detection type, rule ID, action and retry-cap state to local logcat under `BlockerAccessibility`; mask decisions add only rule ID and rectangle count. Release builds do not log these decisions. This debug logging is separate from the diagnostics setting; the opt-in in-memory diagnostics described below do not use logcat.
 
-Instagram masking uses the `clips_tab` resource ID and bounds for the bottom tab, plus resource IDs, parent indices and bounds for inline feed video posts. An outer `video_container` must contain `media_group` and no `row_feed_photo_imageview` descendant; photo posts are excluded. Feed rectangles are clipped to the feed area below the top action bar and above the bottom tabs. The shared overlay covers these rectangles and consumes touches without changing Instagram's layout. No video, photo, label or other content is read or retained. The same mask cleanup paths apply. The profile Reels sub-tab and Explore grid remain outside this masking rule; inline feed overlay behavior and scroll lag still need device validation.
+Instagram masking uses captured resource IDs, ancestry and bounds for the Reels tab and feed media. Video-only masking requires positive playback signals; all-media masking includes photo/video containers and carousels. Feed rectangles are clipped below action bars and above bottom tabs. Feed overlays pass touches through so scrolling works; the Reels-tab overlay consumes touches. No video, photo, label or other content is read or retained, and the layout does not reflow. The profile Reels sub-tab and Explore grid remain outside this masking rule.
+
+With Instagram masking enabled, the service automatically clicks the home-feed title and the topmost feed-menu item (Following), using IDs and position without reading text. It reacquires only an Instagram root, checks the captured bounds and performs `ACTION_CLICK` on a clickable node or an ancestor within five hops. Home attempts are spaced at least 1500 ms apart and capped at three per home episode; each menu visit permits one Following click. Missing or stale targets cause no click. No gesture capability is requested. The feed-mode setting chooses videos only, nothing, or all media on Following; For-you media is always masked. These settings do not affect the independent viewer-blocking toggle. The same mask cleanup paths apply; automatic switching and all three feed modes await coordinator device validation.
 
 Settings are stored locally in the existing `blocker_settings` Preferences DataStore, shared by the settings screen and service. The keys are:
 
@@ -22,6 +24,7 @@ Settings are stored locally in the existing `blocker_settings` Preferences DataS
 - `youtube_mask_entry_points`
 - `instagram_block_viewer`
 - `instagram_mask_entry_points`
+- `instagram_feed_mode` (enum name; defaults to `FOLLOWING_MASK_VIDEOS`)
 - `diagnostics_enabled`
 
 ## Opt-in local diagnostics
@@ -33,7 +36,7 @@ Each entry contains only:
 - `timeMillis`: decision time in milliseconds, displayed as local time;
 - `packageName`: target package name;
 - `appVersion`: target app version name, or null if unavailable;
-- `ruleId`: matched viewer or mask rule ID, or null;
+- `ruleId`: matched viewer/mask rule IDs, plus `ig-feed-switch-v1` for an emitted feed-switch action, or null;
 - `detection`: `Viewer`, `None` or `Unknown`;
 - `action`: `Back` or `Nothing`;
 - `masks`: mask count only;

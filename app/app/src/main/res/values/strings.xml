@@ -16,4 +16,7 @@
     <string name="diagnostics_unknown_version">unknown version</string>
     <string name="diagnostics_cap">cap</string>
     <string name="diagnostics_entry">%1$s %2$s %3$s %4$s %5$s masks=%6$d%7$s</string>
+    <string name="instagram_feed_hide_videos">Following feed, hide videos</string>
+    <string name="instagram_feed_show_all">Following feed, show everything</string>
+    <string name="instagram_feed_hide_all">Hide all feed media</string>
 </resources>

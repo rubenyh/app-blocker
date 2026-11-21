@@ -2,6 +2,8 @@ package com.example.appblocker.settings
 
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
+import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.core.Preferences
 import java.io.IOException
 import kotlinx.coroutines.CoroutineScope
@@ -33,7 +35,7 @@ class SettingsRepositoryTest {
     check(file.delete())
     val storeJob = Job()
     val storeScope = CoroutineScope(backgroundScope.coroutineContext + storeJob)
-    val expected = BlockerSettings(diagnosticsEnabled = true)
+    val expected = BlockerSettings(diagnosticsEnabled = true, instagramFeedMode = InstagramFeedMode.MASK_ALL_MEDIA)
     try {
       val repository = SettingsRepository(
         PreferenceDataStoreFactory.create(scope = storeScope) { file },
@@ -57,6 +59,7 @@ class SettingsRepositoryTest {
       defaults.copy(instagramBlockViewer = false),
       defaults.copy(instagramMaskEntryPoints = false),
       defaults.copy(diagnosticsEnabled = true),
+      *InstagramFeedMode.entries.map { defaults.copy(instagramFeedMode = it) }.toTypedArray(),
     )
     for ((index, expected) in cases.withIndex()) {
       val file = tempFolder.newFile("field-$index.preferences_pb")
@@ -76,6 +79,16 @@ class SettingsRepositoryTest {
   @Test(expected = IllegalStateException::class)
   fun programmingErrorsAreNotSwallowed() = runTest {
     SettingsRepository(failingStore(IllegalStateException())).settings.first()
+  }
+
+  @Test fun missingAndUnknownModeUseDefault() = runTest {
+    val file = tempFolder.newFile("unknown.preferences_pb")
+    check(file.delete())
+    val store = PreferenceDataStoreFactory.create(scope = backgroundScope) { file }
+    val repository = SettingsRepository(store)
+    assertEquals(InstagramFeedMode.FOLLOWING_MASK_VIDEOS, repository.settings.first().instagramFeedMode)
+    store.edit { it[stringPreferencesKey("instagram_feed_mode")] = "FUTURE_MODE" }
+    assertEquals(InstagramFeedMode.FOLLOWING_MASK_VIDEOS, repository.settings.first().instagramFeedMode)
   }
 
   private fun failingStore(error: Exception) = object : DataStore<Preferences> {
