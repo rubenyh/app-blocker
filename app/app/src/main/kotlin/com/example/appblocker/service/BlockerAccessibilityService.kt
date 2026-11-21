@@ -246,6 +246,8 @@ class BlockerAccessibilityService : AccessibilityService() {
 
   override fun onAccessibilityEvent(event: AccessibilityEvent?) {
     val pkg = event?.packageName?.toString() ?: return
+    // Our own overlay windows raise window events; they must not count as leaving the target app.
+    if (pkg == packageName) return
     if (pkg != YOUTUBE_PACKAGE && pkg != INSTAGRAM_PACKAGE) {
       if (event.eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
         masks.removeAll()

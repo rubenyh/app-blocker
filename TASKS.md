@@ -255,7 +255,7 @@ This is the single implementation backlog.
   - The DM thread negative fixture.
   - An external link.
 - **Next action:** the owner sends a Reel by DM to the test account. The coordinator then captures fixtures and runs the scenario.
-### T-404 Instagram feed modes: auto-Following + feed media masking — IN_PROGRESS (Dep: T-402)
+### T-404 Instagram feed modes: auto-Following + feed media masking — DONE (Dep: T-402)
 - **Owner decisions (2026-11-20):**
   - Instagram home always switches automatically to the **Following** feed.
   - A per-user setting chooses one of three feed modes:
@@ -271,6 +271,26 @@ This is the single implementation backlog.
   - **Following page:** `action_bar_button_back` + `action_bar_title`, with no tab bar.
   - **Feed menu popup:** `context_menu_item` ×2, with Following first, identified by position.
   - Every screen has 83–137 nodes, under the 400 cap.
+- **Rework:**
+  - Orca task `task_b6db715cc100`, dispatch `ctx_1108180a9d85` (codex), merged in `e221cf4`.
+  - The worker used `ACTION_CLICK` on the logo and menu items. No gesture capability was added.
+  - Coordinator fix: the service ignores events from its own package. Without this, adding an overlay window raised a window-state event that removed the masks immediately.
+- **Evidence (2026-11-20, Instagram 456.1.0.56.78, AVD Android 16):**
+  - Checks: build, 126 unit tests and lint all exit 0.
+  - Instagram on the device:
+    - Launching Instagram auto-switches to Following (`action_bar_button_back`, no `feed_tab`).
+    - In mode 1, a natgeo video is covered and a carousel post stays visible.
+    - Scrolling still works with the masks on.
+    - Pressing Back to home switches to Following again, with no loop observed over 14 s.
+  - YouTube regression after `flagIncludeNotImportantViews`:
+    - The Shorts tab is still masked and taps on it are blocked.
+    - The signed-out bar now has **5 buttons** (216 px each), and index 1 is still the Shorts tab.
+    - Short-from-search: **NOT RUN**. YouTube rendered a black screen on the emulator (low memory: about 700 MB available).
+- **NOT RUN:**
+  - modes 2 and 3 on the device (covered by unit tests only);
+  - mask lag measurement;
+  - dark theme;
+  - a photo post with music.
 ## P5 — Compatibility and distribution hardening
 
 ### T-501 Configuration coverage — TODO (Dep: T-403)
