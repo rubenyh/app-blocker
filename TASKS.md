@@ -213,18 +213,24 @@ This is the single implementation backlog.
 - **Backup review:** the diagnostics log is never written to disk, so it is never backed up. The DataStore toggles may be included in Android backup. This is accepted because they are non-sensitive booleans; see PRIVACY.md.
 ## P4 — Instagram
 
-### T-401 Instagram evidence capture — BLOCKED (Dep: T-302)
-- **Blocked on the owner:** the emulator has no Google account, and the coordinator does not create Meta accounts. Meta forbids automated sign-up, and verification needs the owner's contact details.
-- **Next action:** in AVD `Medium_Phone_API_36.1` (running), the owner:
-  1. signs in to Play Store with a Google account;
-  2. installs Instagram;
-  3. signs in to a throwaway Instagram test account;
-  4. tells the coordinator.
+### T-401 Instagram evidence capture — IN_PROGRESS (Dep: T-302)
 - **Acceptance:** fixtures exist for:
   - the Reels tab;
   - a Reel opened from the feed, a profile, a DM and an external link;
   - negative screens: DM thread, profile grid, stories, home feed, search and a normal (non-Reel) video post.
-
+- **Evidence so far (2026-11-20; Instagram 456.1.0.56.78; AVD Android 16, en-US; signed-in throwaway test account):**
+  - Fixtures are in `app/app/src/test/resources/fixtures/instagram/`. Redaction check: 0 nonconforming lines. Raw dumps and screenshots are deleted.
+  - Positive fixtures: `reels_tab`, `reel_from_feed`, `reel_from_explore`, `reel_from_profile`.
+  - Negative fixtures: `home` (includes an inline feed video), `explore`, `direct_inbox`, `own_profile`, `other_profile` (Reels grid), `other_profile_posts` (highlights tray), `story_viewer`.
+- **Observations:**
+  - **Viewer:** `id/clips_viewer_view_pager` containing a full-height `id/clips_video_container`. This holds for the tab, feed, Explore and profile paths.
+  - **Stories:** they use `id/reel_viewer_root` and `highlights_reel_tray_recycler_view`. Instagram calls stories "reels" internally, so rules must match `clips_*`, never `reel_*`.
+  - **Bottom tabs have IDs:** `feed_tab`, `clips_tab` (Reels), `direct_tab`, `search_tab`, `profile_tab`. The Reels entry point can be masked by ID, independent of locale.
+  - **Profile Reels sub-tab:** the 2nd `profile_tab_icon_view`, with no unique ID.
+  - **Inline feed video posts** play in the home feed (`video_container`). They are not the Reels viewer and are not blocked. This is a product limitation to note in PRODUCT.
+- **Remaining:**
+  - A DM thread containing a Reel, and a Reel opened from that DM. **Needs the owner** to send a Reel to the test account by DM.
+  - A Reel opened from an external link.
 ### T-402 Instagram rules — TODO (Dep: T-401, T-304)
 - **Acceptance:**
   - Unit tests pass.

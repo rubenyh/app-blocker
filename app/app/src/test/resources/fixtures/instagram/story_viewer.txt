@@ -1,0 +1,21 @@
+# fixture: ig_story_viewer
+# Story/highlight viewer (reel_viewer_root: Instagram calls stories "reels" internally). Negative - must never block.
+# source: uiautomator dump, redacted to class|resource-id|selected|bounds (no text, no content-desc)
+# app: com.instagram.android versionName=456.1.0.56.78
+# device: AVD Medium_Phone_API_36.1, Android 16, locale en-US, 1080x2400
+# captured: 2026-11-20 by coordinator (T-401), signed-in test account
+FrameLayout||sel=false|[0,0][1080,2400]
+  ViewGroup|com.instagram.android:id/layout_container_parent|sel=false|[0,0][1080,2400]
+    FrameLayout|com.instagram.android:id/reel_viewer_root|sel=false|[0,63][1080,2337]
+      Button||sel=false|[0,63][1080,2337]
+        FrameLayout||sel=false|[503,2050][578,2208]
+        ViewGroup|com.instagram.android:id/reel_viewer_header|sel=false|[0,212][1080,376]
+          Button|com.instagram.android:id/reel_viewer_text_container|sel=false|[116,233][725,376]
+            androidx.compose.ui.platform.ComposeView|com.instagram.android:id/reel_viewer_title_row_compose|sel=false|[116,233][444,277]
+              View||sel=false|[116,233][444,277]
+                TextView||sel=false|[148,233][277,277]
+                TextView||sel=false|[301,233][439,277]
+            FrameLayout|com.instagram.android:id/reel_viewer_attribution_frame_layout|sel=false|[116,277][476,376]
+              Button|com.instagram.android:id/reel_app_attribution_action_text|sel=false|[148,287][444,325]
+          TextView|com.instagram.android:id/reel_header_unconnected_follow_button_stub|sel=false|[757,233][954,317]
+          FrameLayout|com.instagram.android:id/mimicry_top_right_hamburger_container|sel=false|[954,212][1080,338]
