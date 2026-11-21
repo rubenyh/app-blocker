@@ -2,6 +2,7 @@ package com.example.appblocker.policy
 
 import com.example.appblocker.detect.Detection
 import com.example.appblocker.service.YOUTUBE_PACKAGE
+import com.example.appblocker.service.INSTAGRAM_PACKAGE
 
 sealed interface Action {
   data object Back : Action
@@ -17,7 +18,7 @@ class BlockPolicy {
 
   fun onTargetScreen(pkg: String, detection: Detection, blockEnabled: Boolean, now: Long): Action {
     if (pkg != episodePackage || !blockEnabled) onContextExit()
-    if (pkg != YOUTUBE_PACKAGE || !blockEnabled) return Action.Nothing
+    if ((pkg != YOUTUBE_PACKAGE && pkg != INSTAGRAM_PACKAGE) || !blockEnabled) return Action.Nothing
     when (detection) {
       Detection.None -> onContextExit()
       Detection.Unknown -> Unit

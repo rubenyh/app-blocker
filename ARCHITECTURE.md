@@ -10,17 +10,17 @@ The single module `app/app/` uses Compose under namespace `com.example.appblocke
 
 `service/BlockerAccessibilityService` is registered in the manifest with `BIND_ACCESSIBILITY_SERVICE`. It runs independently of any Activity, creates a supervised main-thread coroutine scope on connection, and collects the existing repository's settings into a volatile field. Reconnection cancels the previous scope and resets the policy and conflated trigger channel; unbind and destroy cancel the scope, close the channel and reset policy. Interrupt resets policy.
 
-`res/xml/accessibility_service_config.xml` has no package filter ([ADR-0002](docs/decisions/ADR-0002-unfiltered-events-for-context-exit.md)). It requests window-state, window-content and scroll events with a 100 ms notification timeout, window-content retrieval and view IDs. Non-YouTube window-state events synchronously clear masks and reset policy; no hierarchy is traversed for those events. YouTube events enqueue a trigger while viewer blocking or entry-point masking is enabled. Instagram detection and masking are not implemented. See [docs/PRIVACY.md](docs/PRIVACY.md).
+`res/xml/accessibility_service_config.xml` has no package filter ([ADR-0002](docs/decisions/ADR-0002-unfiltered-events-for-context-exit.md)). It requests window-state, window-content and scroll events with a 100 ms notification timeout, window-content retrieval and view IDs. Non-target window-state events synchronously clear masks and reset policy; no hierarchy is traversed for those events. YouTube and Instagram events enqueue a trigger while that app's viewer blocking or entry-point masking is enabled. See [docs/PRIVACY.md](docs/PRIVACY.md).
 
 ### YouTube detection and policy
 
-`detect/ScreenSnapshot` contains a package name and nodes with view ID, class name, selected flag, bounds and parent index, without text or content descriptions. `SnapshotExtractor` checks the active root's package before traversing YouTube, then performs breadth-first extraction, skipping invisible subtrees. It obtains at most 400 nodes and descends to depth 40; a limit hit, missing root or stale-node runtime exception yields Unknown. Nodes are recycled below API 33 and never cached across events.
+`detect/ScreenSnapshot` contains a package name and nodes with view ID, class name, selected flag, bounds and parent index, without text or content descriptions. `SnapshotExtractor` checks the active root's package before traversing YouTube or Instagram, then performs breadth-first extraction, skipping invisible subtrees. It obtains at most 400 nodes and descends to depth 40; a limit hit, missing root or stale-node runtime exception yields Unknown. Nodes are recycled below API 33 and never cached across events.
 
 `detect/YouTubeRules.detectYouTube` is pure. The captured T-303 fixtures support `Viewer("yt-reel-player-v1")` when a `reel_player_page_container` descends from `reel_recycler` and is at least half the root height. Empty snapshots or nonpositive root height are Unknown; other YouTube screens are None. No tab selection or `reel_time_bar` signal is used.
 
 `policy/BlockPolicy` accepts monotonic milliseconds per call and returns Back or Nothing. A viewer episode sends one Back immediately, permits retries at least 1500 ms apart, and caps attempts at three. Unknown preserves the episode without action. None, a package switch, context exit or disabling blocking ends it.
 
-One main-thread collector consumes `Channel<Unit>(Channel.CONFLATED)`: active root -> extractor -> YouTube rule -> policy with live settings and `SystemClock.elapsedRealtime()` -> `performGlobalAction(GLOBAL_ACTION_BACK)` when requested. A null snapshot is Unknown; a different root package resets policy without Back. Settings disable resets policy immediately, and re-enabling queues a fresh check. Debuggable builds log only detection, rule ID, action and retry-cap state. Fixture tests verify matching and policy, not device behavior; T-305 owns device validation.
+One main-thread collector consumes `Channel<Unit>(Channel.CONFLATED)`: active root -> extractor -> per-package rule -> policy with that app's live settings and `SystemClock.elapsedRealtime()` -> `performGlobalAction(GLOBAL_ACTION_BACK)` when requested. A null snapshot is Unknown for the last active target; package changes reset policy and masks before processing the new target. Disabling the active app's viewer toggle resets policy immediately, and settings changes queue a fresh check. Debuggable builds log only detection, rule ID, action and retry-cap state. Fixture tests verify matching and policy, not device behavior.
 
 ### YouTube tab masking
 
@@ -30,11 +30,19 @@ With masking enabled, the collector passes those bounds to `overlay/MaskOverlay`
 
 Masks clear on context exit, masking toggle-off, interrupt, unbind, destroy, reconnect, configuration change and before Back. Configuration changes and enabling masking enqueue a fresh check. Window add/update/remove failures are caught so they do not crash the service. Debug-only mask logs contain only rule ID and rectangle count. Device positioning, touch blocking, colors and lifecycle behavior remain unverified until coordinator validation.
 
+### Instagram detection and tab masking
+
+`detectInstagram` follows the same pure-rule structure as YouTube. Instagram 456.1.0.56.78 fixtures captured on Android 16, en-US support `Viewer("ig-clips-viewer-v1")` only when `clips_video_container` descends from `clips_viewer_view_pager` and is at least half the root height. Empty snapshots or nonpositive root height are Unknown; other screens are None. Stories use `reel_*` IDs, which this rule never matches.
+
+`instagramEntryPoints` returns positive-size `clips_tab` bounds under ID-based, locale-independent rule `ig-reels-tab-v1`. The service shows these through the existing `MaskOverlay` only when `instagramMaskEntryPoints` is on and detection is None; `instagramBlockViewer` independently gates Back. Existing overlay colors and the 3 px inset were calibrated for YouTube only; Instagram appearance and touch coverage need device validation. Package changes, Unknown and Viewer decisions, disabling masking and the existing service lifecycle paths clear masks.
+
+The profile Reels sub-tab has no unique captured ID and remains unmasked, as do Explore grid tiles and inline feed videos. Profiles opened from inside the viewer (`other_profile` and `other_profile_posts`) have no bottom bar in the captures, so return no masks. A single Back from a Reel opened through DM is expected to return to the thread; its fixture and device check remain pending with the owner. Instagram fixture tests are not device validation (T-403).
+
 ### Local diagnostics
 
 `diagnostics/Diagnostics` is a process-wide pure Kotlin object shared by the service and settings ViewModel. Its read-only `StateFlow` exposes at most 200 decision entries, dropping the oldest when full. Recording defaults off; the service settings collector and the ViewModel's collected settings synchronize opt-in, and disabling clears the log. Clear removes entries without disabling recording. Nothing is persisted or sent over the network; process death loses the log.
 
-After each YouTube decision while diagnostics is enabled, the service records wall-clock time, package name, cached target version name (nullable), rule ID (nullable), detection (`Viewer`, `None`, `Unknown`), action (`Back`, `Nothing`), mask count and retry-cap state. Consecutive decisions with the same detection, action, mask count and rule ID are skipped. Version names use `getPackageInfo` once per package per service lifetime, caching null when the package is unavailable; manifest queries expose only the two target packages for this lookup.
+After each enabled YouTube or Instagram decision while diagnostics is enabled, the service records wall-clock time, package name, cached target version name (nullable), rule ID (nullable), detection (`Viewer`, `None`, `Unknown`), action (`Back`, `Nothing`), mask count and retry-cap state. Consecutive decisions from the same package with the same detection, action, mask count and rule ID are skipped. Version names use `getPackageInfo` once per package per service lifetime, caching null when the package is unavailable; manifest queries expose only the two target packages for this lookup.
 
 Settings shows the retained count, Clear, and the newest 50 entries in reverse time order while enabled. Each plain-text row shows local `HH:mm:ss`, short package name, version, detection/rule ID, action, mask count and an optional cap marker. Rows scroll horizontally to preserve one line and full text access. There is no export or share action. See [docs/PRIVACY.md](docs/PRIVACY.md) for data boundaries.
 
@@ -49,21 +57,6 @@ Keep one module. Packages below are under `com.example.appblocker`.
 | Component | Responsibility |
 |---|---|
 | `ui/onboarding` | Prominent disclosure, affirmative consent, opening Accessibility settings, restricted-settings help and service status. |
-| `detect/InstagramRules` | Evidence-backed Instagram viewer detection (T-402). |
-
-### Planned event-flow extensions
-
-```text
-Accessibility event
-  -> package filter (YouTube / Instagram)
-  -> conflated channel (latest snapshot only)
-  -> SnapshotExtractor (bounded BFS)
-  -> YouTubeRules / InstagramRules
-  -> BlockPolicy + live settings + injected clock
-  -> Back | Nothing (viewer policy); show / removeAll (separate masking path)
-```
-
-The implemented flow above handles YouTube viewer blocking and tab masking. Instagram rules extend it later.
 
 ### Behavior and lifecycle
 
@@ -77,6 +70,6 @@ The implemented flow above handles YouTube viewer blocking and tab masking. Inst
 
 ### Data boundaries and constraints
 
-The service reads only event package name and type from non-target events (ADR-0002); node extraction currently handles only YouTube, checking the active root package first. Snapshots contain package, view IDs, class names, selected flags, bounds and parent indices, without text or content descriptions. Nothing leaves the device. Opt-in diagnostics contain only local rule decisions in memory, never messages, credentials, titles, screenshots or full accessibility dumps. Evidence must follow [docs/TESTING.md](docs/TESTING.md).
+The service reads only event package name and type from non-target events (ADR-0002); node extraction handles only YouTube and Instagram, checking the active root package first. Snapshots contain package, view IDs, class names, selected flags, bounds and parent indices, without text or content descriptions. Nothing leaves the device. Opt-in diagnostics contain only local rule decisions in memory, never messages, credentials, titles, screenshots or full accessibility dumps. Evidence must follow [docs/TESTING.md](docs/TESTING.md).
 
 The ADR permits Back navigation and overlay masking on official apps. It does not permit true view removal or layout reflow: masked gaps remain and masks may lag. Patched apps and root require a new accepted ADR. Sensitive views (`accessibilityDataSensitive`) can hide needed metadata, and Advanced Protection can prevent this service from operating; Android 17 impact remains unverified in T-503. Android 13+ sideloads require the user's restricted-settings step. Prominent disclosure and consent are required by planned onboarding; Play approval is not assumed.

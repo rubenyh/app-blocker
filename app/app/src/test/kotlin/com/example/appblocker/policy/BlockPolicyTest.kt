@@ -70,10 +70,34 @@ class BlockPolicyTest {
     assertEquals(Action.Back, screen())
   }
 
-  @Test fun instagramDoesNothingAndResets() {
-    screen()
-    assertEquals(Action.Nothing, screen(pkg = INSTAGRAM_PACKAGE))
-    assertEquals(Action.Back, screen())
+  @Test fun switchingTargetPackagesResetsEpisode() {
+    for (pkg in listOf(YOUTUBE_PACKAGE, INSTAGRAM_PACKAGE, YOUTUBE_PACKAGE)) {
+      assertEquals(Action.Back, screen(pkg = pkg, now = 0))
+      assertEquals(Action.Back, screen(pkg = pkg, now = 1500))
+      assertEquals(Action.Back, screen(pkg = pkg, now = 3000))
+      assertEquals(Action.Nothing, screen(pkg = pkg, now = 4500))
+    }
+  }
+
+  @Test fun instagramHasSameEpisodeSemantics() {
+    val reels = Detection.Viewer("ig-clips-viewer-v1")
+    fun instagram(detection: Detection = reels, enabled: Boolean = true, now: Long = 0) =
+      screen(INSTAGRAM_PACKAGE, detection, enabled, now)
+
+    assertEquals(Action.Back, instagram(now = 100))
+    for (time in 101L..1599L) assertEquals(Action.Nothing, instagram(now = time))
+    assertEquals(Action.Nothing, instagram(Detection.Unknown, now = 1599))
+    assertEquals(Action.Back, instagram(now = 1600))
+    assertEquals(Action.Back, instagram(now = 3100))
+    assertTrue(policy.retryLimitReached)
+    assertEquals(Action.Nothing, instagram(Detection.Unknown, now = 4600))
+    assertEquals(Action.Nothing, instagram(now = 6000))
+    assertEquals(Action.Nothing, instagram(Detection.None, now = 6000))
+    assertEquals(Action.Back, instagram(now = 6000))
+    assertEquals(Action.Nothing, instagram(enabled = false, now = 6000))
+    assertEquals(Action.Back, instagram(now = 6000))
+    policy.onContextExit()
+    assertEquals(Action.Back, instagram(now = 6000))
   }
 
   private fun screen(

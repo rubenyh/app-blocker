@@ -4,6 +4,7 @@ import android.graphics.Rect
 import android.os.Build
 import android.view.accessibility.AccessibilityNodeInfo
 import com.example.appblocker.service.YOUTUBE_PACKAGE
+import com.example.appblocker.service.INSTAGRAM_PACKAGE
 
 object SnapshotExtractor {
   const val MAX_NODES = 400
@@ -14,8 +15,8 @@ object SnapshotExtractor {
     val obtained = mutableListOf(root)
     try {
       val pkg = root.packageName?.toString() ?: return null
-      // A queued YouTube event can outlive its window; never traverse another app.
-      if (pkg != YOUTUBE_PACKAGE) return ScreenSnapshot(pkg, emptyList())
+      // A queued target event can outlive its window; never traverse another app.
+      if (pkg != YOUTUBE_PACKAGE && pkg != INSTAGRAM_PACKAGE) return ScreenSnapshot(pkg, emptyList())
       val queue = ArrayDeque<Pending>()
       queue.add(Pending(root, -1, 0))
       val nodes = mutableListOf<SnapshotNode>()
