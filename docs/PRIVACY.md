@@ -46,4 +46,4 @@ Entries contain no text, content descriptions, node lists, bounds, messages, cre
 
 The manifest's `<queries>` package visibility lists only `com.google.android.youtube` and `com.instagram.android`. It is used only to read those two target apps' version names through the package manager; lookup results, including unavailable versions, are cached for the service lifetime.
 
-The app declares no network permission and uses no network communication. Android application backup is enabled in the manifest with no custom backup rules, so the settings above may be included in the user's device backup; the diagnostic entries cannot be included.
+The app declares no network permission and uses no network communication. Backups are disabled. The manifest sets `android:allowBackup="false"`, and `res/xml/data_extraction_rules.xml` excludes every domain from cloud backup and device-to-device transfer on Android 12+. Settings and diagnostics never leave the device. After a reinstall or a move to a new device, the settings return to their defaults.

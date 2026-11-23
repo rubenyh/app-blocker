@@ -27,7 +27,7 @@ From the repository root:
 cd app; .\gradlew.bat :app:assembleDebug
 ```
 
-The Gradle root is `app/`; its single module is `app/app/`. The stack is AGP 9.0.1 with built-in Kotlin, Kotlin 2.3.20, Gradle wrapper 9.1.0, JVM toolchain 17, Compose BOM 2026.03.01, Material3 and Navigation3 1.0.1. `compileSdk` and `targetSdk` are 37; `minSdk` is 24. The namespace is `com.example.appblocker`; the application ID is `com.appblocker.app`.
+The Gradle root is `app/`; its single module is `app/app/`. The stack is AGP 9.5.2 with built-in Kotlin, Kotlin 2.4.21, Gradle wrapper 9.9.2, JVM toolchain 17, Compose BOM 2026.03.01, Material3 and Navigation3 1.0.1. `compileSdk` and `targetSdk` are 37; `minSdk` is 24. The namespace is `com.example.appblocker`; the application ID is `com.appblocker.app`.
 
 ## Install and run
 
@@ -56,8 +56,8 @@ For sideloaded apps on Android 13+, open **App info → ⋮ → Allow restricted
 
 Current check status and device evidence are recorded per task in [TASKS.md](TASKS.md); verified device behavior is in [docs/COMPATIBILITY.md](docs/COMPATIBILITY.md). Instrumented tests have **not been run**.
 
-- **compileSdk warning:** AGP 9.0.1 reports testing only through compileSdk 36.1 while this project uses 37. The baseline build succeeded; no dependency change or warning suppression was needed for that result.
-- **First build:** the wrapper downloads Gradle 9.1.0 on first use; allow time and network access for the download and dependencies.
+- **First build:** the wrapper downloads Gradle 9.9.2 on first use and checks it against `distributionSha256Sum`; allow time and network access for the download and dependencies.
+- **Dependency verification failed:** a dependency or plugin changed without updating `app/gradle/verification-metadata.xml`. See [docs/SECURITY.md](docs/SECURITY.md#dependency-verification).
 - **Accessibility switch unavailable after sideloading:** once the service exists, complete the restricted-settings step above before trying again.
 
 Read [CONTRIBUTING.md](CONTRIBUTING.md) before making changes.
