@@ -17,7 +17,7 @@ lifecycleViewmodelNav3 = "2.10.0"
 # Build-tool security pins (transitive deps of AGP, KGP and the lint tool). Raise or remove when AGP ships a
 # patched version; see docs/SECURITY.md.
 bouncycastle = "1.85"
-commonsLang3 = "3.18.0"
+commonsLang3 = "3.22.0"
 guava = "33.7.2-jre"
 httpclient = "4.5.13"
 jdom2 = "2.0.6.1"
