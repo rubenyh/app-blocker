@@ -1,6 +1,6 @@
 [versions]
 androidxDataStore = "1.3.0"
-androidGradlePlugin = "9.0.1"
+androidGradlePlugin = "9.5.2"
 androidxCore = "1.18.0"
 androidxLifecycle = "2.10.0"
 androidxActivity = "1.13.0"
@@ -11,9 +11,17 @@ androidxTestRunner = "1.7.0"
 androidxTestEspresso = "3.7.0"
 coroutines = "1.10.2"
 junit = "4.13.2"
-kotlin = "2.3.20"
+kotlin = "2.4.21"
 nav3Core = "1.0.1"
 lifecycleViewmodelNav3 = "2.10.0"
+# Build-tool security pins (transitive deps of AGP, KGP and the lint tool). Raise or remove when AGP ships a
+# patched version; see docs/SECURITY.md.
+bouncycastle = "1.85"
+commonsLang3 = "3.18.0"
+guava = "33.7.2-jre"
+httpclient = "4.5.13"
+jdom2 = "2.0.6.1"
+jose4j = "0.9.6"
 
 [libraries]
 androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "androidxDataStore" }
@@ -38,6 +46,16 @@ kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-t
 androidx-navigation3-runtime = { module = "androidx.navigation3:navigation3-runtime", version.ref = "nav3Core" }
 androidx-navigation3-ui = { module = "androidx.navigation3:navigation3-ui", version.ref = "nav3Core" }
 androidx-lifecycle-viewmodel-navigation3 = { module = "androidx.lifecycle:lifecycle-viewmodel-navigation3", version.ref = "lifecycleViewmodelNav3" }
+
+# Build-tool security pins, applied as constraints in build.gradle.kts and app/build.gradle.kts.
+bouncycastle-bcprov = { module = "org.bouncycastle:bcprov-jdk18on", version.ref = "bouncycastle" }
+bouncycastle-bcpkix = { module = "org.bouncycastle:bcpkix-jdk18on", version.ref = "bouncycastle" }
+bouncycastle-bcutil = { module = "org.bouncycastle:bcutil-jdk18on", version.ref = "bouncycastle" }
+commons-lang3 = { module = "org.apache.commons:commons-lang3", version.ref = "commonsLang3" }
+guava = { module = "com.google.guava:guava", version.ref = "guava" }
+httpclient = { module = "org.apache.httpcomponents:httpclient", version.ref = "httpclient" }
+jdom2 = { module = "org.jdom:jdom2", version.ref = "jdom2" }
+jose4j = { module = "org.bitbucket.b_c:jose4j", version.ref = "jose4j" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "androidGradlePlugin" }

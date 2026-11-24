@@ -1,0 +1,19 @@
+# Device diagnostics: bug reports, UI dumps, heap dumps, traces, captures.
+# They can contain account names, notifications and screen content. Never commit them.
+bugreport-*.zip
+bugreport-*.txt
+dumpstate*.txt
+window.xml
+*.hprof
+*.trace
+*.perfetto-trace
+*.pftrace
+screenshots/
+*.mp4
+
+# Build outputs and signing material.
+*.apk
+*.aab
+*.jks
+*.keystore
+local.properties

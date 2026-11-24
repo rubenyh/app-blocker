@@ -17,7 +17,7 @@ Run all Gradle commands from `app/` in PowerShell:
 .\gradlew.bat :app:connectedDebugAndroidTest
 ```
 
-Assemble, unit tests and lint pass on the integration branch (results per task in `TASKS.md`). `connectedDebugAndroidTest` is **not yet run** and needs a connected device or emulator; the coordinator owns device work. See [docs/TESTING.md](docs/TESTING.md) for manual coverage and evidence rules.
+Assemble, unit tests and lint pass on the integration branch (results per task in `TASKS.md`) and run in CI on each pull request. After any dependency, plugin or wrapper change, follow [docs/SECURITY.md](docs/SECURITY.md) to update `verification-metadata.xml` and the wrapper checksums. `connectedDebugAndroidTest` is **not yet run** and needs a connected device or emulator; the coordinator owns device work. See [docs/TESTING.md](docs/TESTING.md) for manual coverage and evidence rules.
 
 ## Coding and review
 

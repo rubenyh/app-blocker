@@ -25,7 +25,7 @@ adb install -r app\build\outputs\apk\debug\app-debug.apk
 emulator -avd Medium_Phone_API_36.1
 ```
 
-`assembleDebug` and `testDebugUnitTest` were verified on 2026-11-19. `lintDebug` exists through AGP but has not been run yet.
+All three were verified on 2026-11-22 (Gradle 9.9.2, AGP 9.5.2). Dependency verification is on: after a dependency change, update `app/gradle/verification-metadata.xml` as described in `docs/SECURITY.md`.
 
 ## Boundaries
 

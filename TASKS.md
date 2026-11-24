@@ -210,7 +210,7 @@ This is the single implementation backlog.
     - Turning the switch off and on leaves the log empty.
     - After a force-stop and restart, the log is empty: it is in memory only.
   - **NOT RUN:** the cap at 200 (unit-tested only), TalkBack, and large text.
-- **Backup review:** the diagnostics log is never written to disk, so it is never backed up. The DataStore toggles may be included in Android backup. This is accepted because they are non-sensitive booleans; see PRIVACY.md.
+- **Backup review:** the diagnostics log is never written to disk, so it is never backed up. Since T-505, backups are disabled, so the DataStore toggles are not backed up either; see PRIVACY.md.
 ## P4 — Instagram
 
 ### T-401 Instagram evidence capture — IN_PROGRESS (Dep: T-302)
@@ -305,3 +305,28 @@ This is the single implementation backlog.
 ### T-504 Play readiness — BLOCKED
 - **Blocked by:** the product decision to sideload first.
 - **Next action:** the owner decides whether to pursue Play distribution. Then the privacy-policy-reviewer reviews the disclosure, the declaration video requirements and the current policy.
+
+### T-505 Security remediation — DONE (2026-11-22)
+- **Work:**
+  - Gradle wrapper 9.1.0 → 9.9.2. The wrapper was regenerated twice; the distribution checksum is pinned.
+  - AGP 9.0.1 → 9.5.2 and Kotlin 2.3.20 → 2.4.21.
+  - Vulnerable AGP/lint build-tool transitives are pinned to patched versions.
+  - Gradle dependency verification is on (`verification-metadata.xml`).
+  - Backups are disabled (`allowBackup="false"`, plus data-extraction rules that exclude every domain). The unused `backup_rules.xml` was deleted.
+  - A root `.gitignore` now blocks diagnostic archives (bug reports, UI and heap dumps, recordings).
+  - CI, Dependabot and `app/.gitattributes` were added.
+  - Details: [docs/SECURITY.md](docs/SECURITY.md).
+- **Checks (Windows, JDK 17.0.18, from a clean build):**
+  - `gradlew --version`: Gradle 9.9.2.
+  - `assembleDebug`, `testDebugUnitTest` (126 tests, 0 failures), `lintDebug` (0 errors) and `assembleRelease`: all exit 0 with strict dependency verification.
+  - Release APK: `aapt2 dump` shows `allowBackup=false` and no INTERNET permission.
+- **Device (AVD `Medium_Phone_API_36.1`, partial):**
+  - The debug APK installed over the previous build.
+  - `dumpsys package` lists no `ALLOW_BACKUP` flag.
+  - The accessibility service stayed enabled and the app launched.
+  - The emulator then crashed twice with a host GPU error ("Failed to compile YUV conversion shader") once YouTube video started. Shorts/Reels blocking, overlay removal, settings persistence and diagnostics were not exercised.
+- **NOT RUN:** CI on GitHub (nothing was pushed); device regression of Shorts/Reels blocking after the toolchain upgrade.
+- **Open:**
+  - **Own-package events (found in review, not device-checked).** `BlockerAccessibilityService.onAccessibilityEvent` ignores every event from this app's package, including `MainActivity` window changes. A quick-switch from a masked YouTube screen to App Blocker might leave a touch-blocking tab mask over the app's own UI. Repro: YouTube home → quick-switch to App Blocker → `adb shell dumpsys window windows`.
+  - **iOS transfer.** `data_extraction_rules.xml` has no `<cross-platform-transfer>` section (Android 16 QPR2). This is low risk because no iOS counterpart app exists.
+  - **ADR wording.** ADR-0002 says the service "retrieves no nodes" for non-target packages. In fact a queued trigger reads the root node's package name, then stops. A follow-up ADR should correct this.

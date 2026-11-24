@@ -82,4 +82,12 @@ dependencies {
   implementation(libs.androidx.navigation3.ui)
   implementation(libs.androidx.navigation3.runtime)
   implementation(libs.androidx.lifecycle.viewmodel.navigation3)
+
+  // Patched versions of vulnerable lint-tool dependencies. Build-time only; see docs/SECURITY.md.
+  constraints {
+    listOf(
+      libs.bouncycastle.bcprov, libs.bouncycastle.bcpkix, libs.bouncycastle.bcutil,
+      libs.commons.lang3, libs.guava, libs.httpclient,
+    ).forEach { add("androidLintTool", it) }
+  }
 }

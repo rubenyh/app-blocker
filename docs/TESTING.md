@@ -12,7 +12,7 @@ Run from `app/` in PowerShell:
 .\gradlew.bat :app:connectedDebugAndroidTest
 ```
 
-`connectedDebugAndroidTest` needs a connected device and is **NOT RUN** so far. Detector tests load redacted fixtures from `app/app/src/test/resources/fixtures/<app>/` (see the `accessibility-rule` skill).
+`connectedDebugAndroidTest` needs a connected device and is **NOT RUN** so far. CI (`.github/workflows/ci.yml`) runs `assembleDebug`, `testDebugUnitTest`, `lintDebug` and `assembleRelease` on every pull request and push to `main`, with dependency verification on; see [SECURITY.md](SECURITY.md). Detector tests load redacted fixtures from `app/app/src/test/resources/fixtures/<app>/` (see the `accessibility-rule` skill).
 
 Planned JVM coverage focuses on positive and negative detector fixtures (viewer, entry points, normal videos, home feed, DMs, profiles and stories), stale/unknown snapshots, and policy loop prevention: one Back per entry, event bursts, cooldown, retry cap and package/window reset. Use an injected clock. Keep instrumented coverage to a minimal smoke test for launching the real UI and exercising onboarding/settings and service status once implemented; use manual device scenarios for target-app integration.
 
