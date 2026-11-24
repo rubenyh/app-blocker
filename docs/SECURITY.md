@@ -28,10 +28,11 @@ The second run uses the new Gradle, so it also refreshes `gradle-wrapper.jar`, `
 
 `app/gradle/verification-metadata.xml` holds a SHA-256 for every artifact the build resolves. Gradle fails the build when an artifact is missing or does not match.
 
-After any dependency or plugin change, regenerate it from `app/` and review the diff:
+After any dependency or plugin change, regenerate it from `app/` and review the diff. Use an empty Gradle home. With a warm cache, Gradle skips parent POMs and BOMs, so they are missing from the file and CI then fails on its cold cache.
 
 ```powershell
 Remove-Item gradle\verification-metadata.xml
+$env:GRADLE_USER_HOME = "$env:TEMP\gradle-verify-home"   # a directory that does not exist yet
 .\gradlew.bat --write-verification-metadata sha256 --no-configuration-cache --rerun-tasks :app:assembleDebug :app:testDebugUnitTest :app:lintDebug :app:assembleRelease buildEnvironment :app:buildEnvironment
 ```
 
